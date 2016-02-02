@@ -132,7 +132,7 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'DATE';
+            tipo_col := 'DATETIME';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
@@ -155,7 +155,7 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'DATE';
+            tipo_col := 'DATETIME';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
@@ -489,7 +489,7 @@ BEGIN
               WHEN reg_datail.TYPE = 'DE' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
               WHEN reg_datail.TYPE = 'FE' THEN
-                tipo_col := 'DATE';
+                tipo_col := 'DATETIME';
               WHEN reg_datail.TYPE = 'IM' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
                 --tipo_col := 'NUMBER (15, 3)';
@@ -510,9 +510,9 @@ BEGIN
               WHEN reg_datail.TYPE = 'NU' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
               WHEN reg_datail.TYPE = 'DE' THEN
-                tipo_col := 'ECIMAL (' || reg_datail.LENGTH || ')';
+                tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
               WHEN reg_datail.TYPE = 'FE' THEN
-                tipo_col := 'DATE';
+                tipo_col := 'DATETIME';
               WHEN reg_datail.TYPE = 'IM' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
                 --tipo_col := 'NUMBER (15, 3)';
@@ -589,7 +589,7 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'DATE';
+            tipo_col := 'DATETIME';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
@@ -612,7 +612,7 @@ BEGIN
           WHEN reg_datail.TYPE = 'DE' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
           WHEN reg_datail.TYPE = 'FE' THEN
-            tipo_col := 'DATE';
+            tipo_col := 'DATETIME';
           WHEN reg_datail.TYPE = 'IM' THEN
             tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
             --tipo_col := 'NUMBER (15, 3)';
@@ -852,7 +852,7 @@ BEGIN
               WHEN reg_datail.TYPE = 'DE' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
               WHEN reg_datail.TYPE = 'FE' THEN
-                tipo_col := 'DATE';
+                tipo_col := 'DATETIME';
               WHEN reg_datail.TYPE = 'IM' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
                 --tipo_col := 'NUMBER (15, 3)';
@@ -875,7 +875,7 @@ BEGIN
               WHEN reg_datail.TYPE = 'DE' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
               WHEN reg_datail.TYPE = 'FE' THEN
-                tipo_col := 'DATE';
+                tipo_col := 'DATETIME';
               WHEN reg_datail.TYPE = 'IM' THEN
                 tipo_col := 'DECIMAL (' || reg_datail.LENGTH || ')';
                 --tipo_col := 'NUMBER (15, 3)';
