@@ -56,11 +56,11 @@ DECLARE
   v_CVE_DIA_es_col        PLS_integer;
   v_CVE_MES_es_col      PLS_integer;
   
-  OWNER_SA                             VARCHAR2(60);
-  OWNER_T                                VARCHAR2(60);
-  OWNER_DM                            VARCHAR2(60);
-  OWNER_MTDT                       VARCHAR2(60);
-  TABLESPACE_DIM                VARCHAR2(60);
+  OWNER_SA          VARCHAR2(60);
+  OWNER_T           VARCHAR2(60);
+  OWNER_DM          VARCHAR2(60);
+  OWNER_MTDT        VARCHAR2(60);
+  TABLESPACE_DIM    VARCHAR2(60);
   
 BEGIN
 
@@ -133,9 +133,9 @@ BEGIN
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                 end if;
             END CASE;
           ELSE    /* NO TIENE VALOR POR DEFECTO */
@@ -170,9 +170,9 @@ BEGIN
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE  || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME'  || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE );
+                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' );
                 end if;
             END CASE;
           END IF;
@@ -210,9 +210,9 @@ BEGIN
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                 end if;
               END CASE;
           ELSE  /* Si no existen valores por defecto */
@@ -247,14 +247,17 @@ BEGIN
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE);
+                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME');
                 end if;
               END CASE;
           END IF;
         END IF;
-        IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' then
+        /* (20151217) Angel Ruiz. BUG. Si se crea un campo AUTOINCREMENT, este debe estar en la PK */
+        /* ya que si no habra un error */
+        --IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' then
+        IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' or (r_mtdt_modelo_logico_TABLA.CI = 'N' and r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) then
           lista_pk.EXTEND;
           lista_pk(lista_pk.LAST) := r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
         END IF;
@@ -631,9 +634,9 @@ BEGIN
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                   end if;
               END CASE;
             ELSE
@@ -668,9 +671,9 @@ BEGIN
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE  || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME'  || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE );
+                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' );
                   end if;
               END CASE;
             END IF;
@@ -708,9 +711,9 @@ BEGIN
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                   end if;
                 END CASE;
             ELSE
@@ -745,14 +748,17 @@ BEGIN
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE  || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME'  || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || r_mtdt_modelo_logico_COLUMNA.DATA_TYPE );
+                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' );
                   end if;
               END CASE;
             END IF;
           END IF;
-          IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' then
+          /* (20151217) Angel Ruiz. BUG. Si se crea un campo AUTOINCREMENT, este debe estar en la PK */
+          /* ya que si no habra un error */
+          --IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' then
+          IF upper(trim(r_mtdt_modelo_logico_COLUMNA.PK)) = 'S' or (r_mtdt_modelo_logico_TABLA.CI = 'N' and r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) then
             lista_pk.EXTEND;
             lista_pk(lista_pk.LAST) := r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
           END IF;
