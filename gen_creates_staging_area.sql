@@ -78,6 +78,7 @@
   OWNER_DM                 VARCHAR2(60);
   OWNER_MTDT               VARCHAR2(60);
   TABLESPACE_SA            VARCHAR2(60);
+  NAME_DM                            VARCHAR(60);
   nombre_tabla_reducido    VARCHAR2(30);
   v_existe_tablas_RE       integer:=0;
   v_encontrado             VARCHAR2(1):='N';
@@ -92,6 +93,7 @@ BEGIN
   SELECT VALOR INTO OWNER_T FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_T';
   SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';
   SELECT VALOR INTO TABLESPACE_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_SA';
+  SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';  
   /* (20150119) FIN*/
   
   /* (20151117) Angel Ruiz. NF. Generacion de los creates de tablas SAD y SADH*/
@@ -115,7 +117,7 @@ BEGIN
       INTO reg_summary;
       EXIT WHEN dtd_interfaz_summary%NOTFOUND;
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || 'SA_' || reg_summary.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SA_' || reg_summary.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
@@ -404,7 +406,7 @@ BEGIN
             --END IF;
           --END LOOP;
           --DBMS_OUTPUT.put_line(';');
-          DBMS_OUTPUT.put_line('ALTER TABLE ' || 'SA_'  || reg_summary.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary.CONCEPT_NAME || '_P PRIMARY KEY (');
+          DBMS_OUTPUT.put_line('ALTER TABLE ' || NAME_DM || '.' || 'SA_'  || reg_summary.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary.CONCEPT_NAME || '_P PRIMARY KEY (');
           FOR indx IN lista_pk.FIRST .. lista_pk.LAST
           LOOP
             IF indx = lista_pk.LAST THEN
@@ -431,7 +433,7 @@ BEGIN
             --END IF;
           --END LOOP;
           --DBMS_OUTPUT.put_line('NOLOGGING LOCAL;');
-          DBMS_OUTPUT.put_line('ALTER TABLE ' || 'SA_'  || reg_summary.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary.CONCEPT_NAME || '_P PRIMARY KEY (');
+          DBMS_OUTPUT.put_line('ALTER TABLE ' || NAME_DM || '.' || 'SA_'  || reg_summary.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary.CONCEPT_NAME || '_P PRIMARY KEY (');
           FOR indx IN lista_pk.FIRST .. lista_pk.LAST
           LOOP
             IF indx = lista_pk.LAST THEN
@@ -472,7 +474,7 @@ BEGIN
           end if;
         end loop;
         if v_encontrado = 'Y' then
-          DBMS_OUTPUT.put_line('CREATE TABLE ' || 'SAD_' || reg_summary.CONCEPT_NAME);
+          DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SAD_' || reg_summary.CONCEPT_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
           primera_col := 1;
@@ -572,7 +574,7 @@ BEGIN
       INTO reg_summary_history;
       EXIT WHEN dtd_interfaz_summary_history%NOTFOUND;  
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || 'SAH_' || reg_summary_history.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary_history.CONCEPT_NAME, reg_summary_history.SOURCE);
       primera_col := 1;
@@ -764,7 +766,7 @@ BEGIN
         IF (no_encontrado = 'Y') THEN
           /* Existen claves de particionado que no estan dentro de la PK */
           /* luego hay que incluirlas */
-          DBMS_OUTPUT.put_line('ALTER TABLE ' || 'SAH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || '_HP PRIMARY KEY (');
+          DBMS_OUTPUT.put_line('ALTER TABLE ' || NAME_DM || '.' || 'SAH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || '_HP PRIMARY KEY (');
           FOR indx IN lista_pk.FIRST .. lista_pk.LAST
           LOOP
             IF indx = lista_pk.LAST THEN
@@ -791,7 +793,7 @@ BEGIN
             --END IF;
           --END LOOP;
           --DBMS_OUTPUT.put_line('NOLOGGING LOCAL;');
-          DBMS_OUTPUT.put_line('ALTER TABLE ' || 'SAH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || '_HP PRIMARY KEY (');
+          DBMS_OUTPUT.put_line('ALTER TABLE ' || NAME_DM || '.' || 'SAH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || '_HP PRIMARY KEY (');
           FOR indx IN lista_pk.FIRST .. lista_pk.LAST
           LOOP
             IF indx = lista_pk.LAST THEN
@@ -835,7 +837,7 @@ BEGIN
         end loop;
         if v_encontrado = 'Y' then
 
-          DBMS_OUTPUT.put_line('CREATE TABLE ' || 'SADH_' || reg_summary_history.CONCEPT_NAME);
+          DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SADH_' || reg_summary_history.CONCEPT_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN dtd_interfaz_detail (reg_summary_history.CONCEPT_NAME, reg_summary_history.SOURCE);
           primera_col := 1;
@@ -992,7 +994,7 @@ BEGIN
             IF (no_encontrado = 'Y') THEN
               /* Ocurre que hay campos de particionado que no formal parte del indice */
               /* Asi tienen que formar parte de la PK segun establece MySQL */
-              DBMS_OUTPUT.put_line('ALTER TABLE ' || 'SADH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || 'DHP PRIMARY KEY (');
+              DBMS_OUTPUT.put_line('ALTER TABLE ' || NAME_DM || '.' || 'SADH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || 'DHP PRIMARY KEY (');
               FOR indx IN lista_pk.FIRST .. lista_pk.LAST
               LOOP
                 IF indx = lista_pk.LAST THEN
@@ -1008,7 +1010,7 @@ BEGIN
               --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary_history.CONCEPT_NAME || 'DHP;');
             ELSE
               /* Podemos crear la PK */
-              DBMS_OUTPUT.put_line('ALTER TABLE ' || 'SADH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || 'DHP PRIMARY KEY (');
+              DBMS_OUTPUT.put_line('ALTER TABLE ' || NAME_DM || '.' || 'SADH_'  || reg_summary_history.CONCEPT_NAME || ' ADD CONSTRAINT ' || reg_summary_history.CONCEPT_NAME || 'DHP PRIMARY KEY (');
               FOR indx IN lista_pk.FIRST .. lista_pk.LAST
               LOOP
                 IF indx = lista_pk.LAST THEN
@@ -1047,6 +1049,7 @@ BEGIN
   CLOSE dtd_interfaz_summary_history;
 
   /* (20150717) ANGEL RUIZ. FIN.*/
+  DBMS_OUTPUT.put_line('quit');
   --DBMS_OUTPUT.put_line('set echo off;');
   --DBMS_OUTPUT.put_line('exit SUCCESS;');
 END;
