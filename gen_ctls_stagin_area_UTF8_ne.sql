@@ -151,7 +151,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida, 'LOAD DATA');
     --UTL_FILE.put_line(fich_salida, 'INFILE ' || '_DIR_DATOS_/﻿_NOMBRE_INTERFACE___FCH_DATOS_');
     UTL_FILE.put_line(fich_salida, 'INFILE');
-    UTL_FILE.put_line(fich_salida, 'INTO TABLE ' || 'SA_' || reg_summary.CONCEPT_NAME);
+    UTL_FILE.put_line(fich_salida, 'INTO TABLE ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME);
     IF reg_summary.TYPE = 'S'             /*  El fichero posee un separador de campos */
     THEN
       UTL_FILE.put_line(fich_salida, 'FIELDS TERMINATED BY "' || reg_summary.SEPARATOR || '"');
@@ -166,18 +166,18 @@ BEGIN
         EXIT WHEN dtd_interfaz_detail%NOTFOUND;
         CASE 
         WHEN reg_datail.TYPE = 'AN' THEN
-          if (reg_datail.COLUMNA <> 'FILE_NAME') then
-            /* Si se trata de la columna que va a almacenar el nombre del fichero */
-            /* del que se realiza la carga, no aparece en la primera parte del Loader. */
-            if (reg_datail.format is not null) then
-              /* Hay formateo de la columna */
-              tipo_col := '@' || reg_datail.COLUMNA;
-            else
-              if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE is null and reg_datail.LENGTH>2) then
+          /* Si se trata de la columna que va a almacenar el nombre del fichero */
+          /* del que se realiza la carga, no aparece en la primera parte del Loader. */
+          if (reg_datail.format is not null) then
+            /* Hay formateo de la columna */
+            tipo_col := '@' || reg_datail.COLUMNA;
+          else
+            if (reg_datail.COLUMNA <> 'FILE_NAME') then
+              if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N' and reg_datail.LENGTH>2) then
                 tipo_col := '@' || reg_datail.COLUMNA;
-              elsif (reg_datail.NULABLE is null and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
+              elsif (reg_datail.NULABLE = 'N' and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
                 tipo_col := '@' || reg_datail.COLUMNA;
-              elsif (reg_datail.NULABLE is null and reg_datail.LENGTH>11) then 
+              elsif (reg_datail.NULABLE = 'N' and reg_datail.LENGTH>11) then 
                 tipo_col := '@' || reg_datail.COLUMNA;
               else
                 tipo_col := reg_datail.COLUMNA;
@@ -185,13 +185,13 @@ BEGIN
             end if;
           end if;
         WHEN reg_datail.TYPE = 'NU' THEN
-          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') > 0 and reg_datail.NULABLE is null) then
+          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') > 0 and reg_datail.NULABLE = 'N') then
             tipo_col := '@' || reg_datail.COLUMNA;
           else            
             tipo_col := reg_datail.COLUMNA;
           end if;
         WHEN reg_datail.TYPE = 'DE' THEN
-          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.NULABLE is null) then
+          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.NULABLE = 'N') then
             tipo_col := '@' || reg_datail.COLUMNA;
           else            
             tipo_col := reg_datail.COLUMNA;
@@ -200,7 +200,7 @@ BEGIN
           if (reg_datail.LENGTH = 14) then
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
-            if (reg_datail.NULABLE is null ) then
+            if (reg_datail.NULABLE = 'N') then
               tipo_col := '@'|| reg_datail.COLUMNA;
             else
               tipo_col := reg_datail.COLUMNA;
@@ -208,8 +208,8 @@ BEGIN
           else
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
-            if (reg_datail.NULABLE is null ) then
-              tipo_col := '@'|| reg_datail.COLUMNA;
+            if (reg_datail.NULABLE = 'N') then
+              tipo_col := '@' || reg_datail.COLUMNA;
             else
               tipo_col := reg_datail.COLUMNA;
             end if;
@@ -218,7 +218,7 @@ BEGIN
           /* En el caso de los IMPORTES siempre hacemos una procesado del campo */
           tipo_col := '@'|| reg_datail.COLUMNA;
         WHEN reg_datail.TYPE = 'TI' THEN
-          if (reg_datail.NULABLE is null) then
+          if (reg_datail.NULABLE = 'N') then
             tipo_col := '@'|| reg_datail.COLUMNA;
           else            
             tipo_col := reg_datail.COLUMNA;
@@ -244,42 +244,42 @@ BEGIN
         WHEN reg_datail.TYPE = 'AN' THEN
           if (reg_datail.format is not null) then
             /* Hay formateo de la columna */
-            tipo_col := '@' || reg_datail.COLUMNA || '=' || procesa_campo_formateo (reg_datail.format, reg_datail.COLUMNA);
+            tipo_col := reg_datail.COLUMNA || '=' || procesa_campo_formateo (reg_datail.format, reg_datail.COLUMNA);
           else
             if (reg_datail.COLUMNA = 'FILE_NAME') then
               tipo_col := 'FILE_NAME = ' || '"MY_FILE"';
-            elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE is null and reg_datail.LENGTH>2) then
-              tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
+            elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N' and reg_datail.LENGTH>2) then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
             elsif (reg_datail.NULABLE is null and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
-              tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
             elsif (reg_datail.NULABLE is null and reg_datail.LENGTH>11) then 
-              tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NO INFORMADO'', @' || reg_datail.COLUMNA || ')';
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NO INFORMADO'', @' || reg_datail.COLUMNA || ')';
             end if;
           end if;
         WHEN reg_datail.TYPE = 'NU' THEN
           /* (20160209) Angel Ruiz */
           /* Si el campo es COD_* entonces voy a ponerle un control para que si viene un NULL introduzca un valor -3 (NI#) */
-          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') > 0  and reg_datail.NULABLE is null) then
-            tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', -3, @' ||reg_datail.COLUMNA || ')';
+          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') > 0  and reg_datail.NULABLE = 'N') then
+            tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', -3, @' ||reg_datail.COLUMNA || ')';
           end if;
         WHEN reg_datail.TYPE = 'DE' THEN
           /* (20160209) Angel Ruiz */
           /* si el campo es COD_* entonces voy a ponerle un control para que si viene un NULL introduzca un valor -3 (NI#) */
-          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE is null) then
-            tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', -3, @' ||reg_datail.COLUMNA || ')';
+          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N') then
+            tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', -3, @' ||reg_datail.COLUMNA || ')';
           end if;
         WHEN reg_datail.TYPE = 'FE' THEN
           if (reg_datail.LENGTH = 14) then
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
-            if (reg_datail.NULABLE is null ) then
-              tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', @' || reg_datail.COLUMNA || ')';
+            if (reg_datail.NULABLE = 'N') then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', @' || reg_datail.COLUMNA || ')';
             end if;              
           else
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
-            if (reg_datail.NULABLE is null ) then
-              tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101'', @' || reg_datail.COLUMNA || ')';
+            if (reg_datail.NULABLE = 'N' ) then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101'', @' || reg_datail.COLUMNA || ')';
             end if;
           end if;
         WHEN reg_datail.TYPE = 'IM' THEN
@@ -309,11 +309,11 @@ BEGIN
               mascara := mascara || '9';
             end if;
           end loop;
-          tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ') REGEXP ''^[0-9.]+[[.,.]][0-9]+$'', replace(replace(@' || reg_datail.COLUMNA || ', ''.'', ''''), '','', ''.''), replace(@' || reg_datail.COLUMNA || ', '','', ''))';
+          tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ') REGEXP ''^[0-9.]+[[.,.]][0-9]+$'', replace(replace(@' || reg_datail.COLUMNA || ', ''.'', ''''), '','', ''.''), replace(@' || reg_datail.COLUMNA || ', '','', ''))';
           dbms_output.put_line('Tipo de columna: ' || tipo_col);
         WHEN reg_datail.TYPE = 'TI' THEN
-          if (reg_datail.NULABLE is null) then
-            tipo_col := 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''000000'', @' || reg_datail.COLUMNA || ')';
+          if (reg_datail.NULABLE = 'N') then
+            tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''000000'', @' || reg_datail.COLUMNA || ')';
           end if;
         END CASE;
         IF primera_col = 1
@@ -345,59 +345,61 @@ BEGIN
         WHEN reg_datail.TYPE = 'AN' THEN
           if (reg_datail.format is not null) then
             /* Hay formateo de la columna */
-            tipo_col := '@' || reg_datail.COLUMNA || ' = ' || procesa_campo_formateo (reg_datail.format, reg_datail.COLUMNA);
+            tipo_col := reg_datail.COLUMNA || ' = ' || procesa_campo_formateo (reg_datail.format, reg_datail.COLUMNA);
           else
             if (reg_datail.COLUMNA = 'FILE_NAME') then
               tipo_col := 'FILE_NAME = ' || '"MY_FILE"';
-            elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE is null and reg_datail.LENGTH>2) then
-              tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NI#'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
-            elsif (reg_datail.NULABLE is null and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
-              tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NI#'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
-            elsif (reg_datail.NULABLE is null and reg_datail.LENGTH>11) then 
-              tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NO INFORMADO'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+            elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N' and reg_datail.LENGTH>2) then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NI#'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+            elsif (reg_datail.NULABLE = 'N' and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NI#'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+            elsif (reg_datail.NULABLE = 'N' and reg_datail.LENGTH>11) then 
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NO INFORMADO'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+            else
+              tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
             end if;
           end if;
         WHEN reg_datail.TYPE = 'NU' THEN
           /* (20160209) Angel Ruiz */
           /* si el campo es COD_* entonces voy a ponerle un control para que si viene un NULL introduzca un valor -3 (NI#) */
-          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.KEY is null and reg_datail.NULABLE is null) then
-            tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', -3, ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.KEY is null and reg_datail.NULABLE = 'N') then
+            tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', -3, ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
           else            
-            tipo_col := 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
+            tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
           end if;
         WHEN reg_datail.TYPE = 'DE' THEN
           /* (20160209) Angel Ruiz */
           /* si el campo es COD_* entonces voy a ponerle un control para que si viene un NULL introduzca un valor -3 (NI#) */
-          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.KEY is null and reg_datail.NULABLE is null) then
-            tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', -3, ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+          if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.KEY is null and reg_datail.NULABLE='N') then
+            tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', -3, ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
           else            
-            tipo_col := 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
+            tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
           end if;
         WHEN reg_datail.TYPE = 'FE' THEN
           if (reg_datail.LENGTH = 14) then
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
-            if (reg_datail.KEY is null and reg_datail.NULABLE is null ) then
-              tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''19900101000000'', substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+            if (reg_datail.KEY is null and reg_datail.NULABLE = 'N') then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''19900101000000'', substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
             else
-              tipo_col := 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+              tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
             end if;
           else
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
-            if (reg_datail.KEY is null and reg_datail.NULABLE is null ) then
-              tipo_col := 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''19900101'', substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+            if (reg_datail.KEY is null and reg_datail.NULABLE = 'N') then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''19900101'', substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
             else
-              tipo_col := 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
+              tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
             end if;
           end if;
         WHEN reg_datail.TYPE = 'IM' THEN
-          tipo_col := 'if(trim(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')) REGEXP ''^[0-9.]+[[.,.]][0-9]+$'', replace(replace(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH ||')' || ', ''.'', ''''), '','', ''.''), replace(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH ||')' || ', '','', ''))';
+          tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')) REGEXP ''^[0-9.]+[[.,.]][0-9]+$'', replace(replace(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH ||')' || ', ''.'', ''''), '','', ''.''), replace(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH ||')' || ', '','', ''))';
         WHEN reg_datail.TYPE = 'TI' THEN
-          if (reg_datail.NULABLE is null) then
-            tipo_col := 'if(trim(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''000000'', substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+          if (reg_datail.NULABLE = 'N') then
+            tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''000000'', substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
           else            
-            tipo_col := 'substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
+            tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea,' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
           end if;
         END CASE;
         IF primera_col = 1
@@ -589,7 +591,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, 'ULT_PASO_EJECUTADO=`mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} 2> /dev/null << EOF');
     UTL_FILE.put_line(fich_salida_sh, '  SELECT if(MAX(MTDT_MONITOREO.CVE_PASO) IS NULL, 0, MAX(MTDT_MONITOREO.CVE_PASO))');
     UTL_FILE.put_line(fich_salida_sh, '  FROM');
-    UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_MONITOREO, ' || 'MTDT_PROCESO, ' || 'MTDT_PASO');
+    UTL_FILE.put_line(fich_salida_sh, '  ' || NAME_DM || '.MTDT_MONITOREO, ' || NAME_DM || '.MTDT_PROCESO, ' || NAME_DM || '.MTDT_PASO');
     UTL_FILE.put_line(fich_salida_sh, '  WHERE');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_MONITOREO.FCH_CARGA = str_to_date(''${FCH_CARGA}'', ''%Y%m%d'') AND');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_MONITOREO.FCH_DATOS = str_to_date(''${FCH_DATOS}'', ''%Y%m%d'') AND');
