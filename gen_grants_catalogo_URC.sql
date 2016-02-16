@@ -31,30 +31,31 @@ DECLARE
    OWNER_TC                            VARCHAR2(60);                                                                                                                    
    OWNER_DWH                         VARCHAR2(60);                                                                                                                      
    OWNER_RD                            VARCHAR2(60);                                                                                                                    
-   PREFIJO_DM                            VARCHAR2(60);                                                                                                                  
+   PREFIJO_DM                            VARCHAR2(60);                
+   NAME_DM                            VARCHAR(60);   
  BEGIN                                                                                                                                                                  
                                                                                                                                                                         
  DBMS_OUTPUT.ENABLE (1000000);
                                                                                                                                                                          
    /* (20150119) ANGEL RUIZ*/                                                                                                                                           
    /* ANTES DE NADA LEEMOS LAS VAR. DE ENTORNO PARA TIEMPO DE GENERACION*/                                                                                              
-   SELECT VALOR INTO OWNER_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_SA';                                                                                      
-   SELECT VALOR INTO OWNER_T FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_T';                                                                                        
-   SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';                                                                                      
-   SELECT VALOR INTO TABLESPACE_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_SA';                                                                            
-   SELECT VALOR INTO OWNER_TC FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_TC';                                                                                      
-   SELECT VALOR INTO OWNER_DWH FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DWH';                                                                                    
-   SELECT VALOR INTO OWNER_RD FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_RD';                                                                                      
-   SELECT VALOR INTO PREFIJO_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'PREFIJO_DM';                                                                                  
+   SELECT VALOR INTO OWNER_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_SA';
+   SELECT VALOR INTO OWNER_T FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_T';
+   SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';
+   SELECT VALOR INTO TABLESPACE_SA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_SA';
+   SELECT VALOR INTO OWNER_TC FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_TC';
+   SELECT VALOR INTO OWNER_DWH FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DWH';
+   SELECT VALOR INTO OWNER_RD FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_RD';
+   SELECT VALOR INTO PREFIJO_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'PREFIJO_DM';
+   SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';   
+   
    /* (20150119) FIN*/                                                                                                                                                  
                                                                                                                                                                         
                                                                                                                                                                         
    SELECT COUNT(*) INTO num_filas FROM MTDT_PERMITED_VALUES;                                                                                                            
    /* COMPROBAMOS QUE TENEMOS FILAS EN NUESTRA TABLA MTDT_PERMITED_VALUES  */                                                                                           
    IF num_filas > 0 THEN                                                                                                                                                
-     /* hay filas en la tabla y por lo tanto el proceso tiene cosas que hacer  */                                                                                       
-     DBMS_OUTPUT.put_line('set echo on;');                                                                                                                              
-     DBMS_OUTPUT.put_line('whenever sqlerror exit 1;');                                                                                                                 
+     /* hay filas en la tabla y por lo tanto el proceso tiene cosas que hacer  */                                                                                                                                                                                                      
      OPEN dtd_permited_values;                                                                                                                                          
      LOOP                                                                                                                                                               
        /* COMENZAMOS EL BUCLE QUE GENERARA LOS CREATES PARA CADA UNA DE LAS TABLAS */                                                                                   
@@ -62,13 +63,11 @@ DECLARE
        INTO reg_per_val;                                                                                                                                                
        EXIT WHEN dtd_permited_values%NOTFOUND;                                                                                                                          
        --clave_foranea :=0;                                                                                                                                             
-       DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || OWNER_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO '''|| OWNER_TC || '''@''localhost'';');
-       --DBMS_OUTPUT.put_line('GRANT select  on ' || OWNER_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' to ' || OWNER_DWH || ';');                       
-       DBMS_OUTPUT.put_line('GRANT select  on ' || OWNER_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME ||' TO ''' || OWNER_RD || '''@''localhost'';');                     
+       DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO '''|| OWNER_TC || '''@''localhost'';');
+       DBMS_OUTPUT.put_line('GRANT select  on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO ''' || OWNER_DWH || '''@''localhost'';');                       
+       DBMS_OUTPUT.put_line('GRANT select  on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME ||' TO ''' || OWNER_RD || '''@''localhost'';');                     
        DBMS_OUTPUT.put_line('');                                                                                                                                        
      END LOOP;                                                                                                                                                          
-     CLOSE dtd_permited_values;                                                                                                                                         
-     DBMS_OUTPUT.put_line('set echo off;');                                                                                                                             
-     DBMS_OUTPUT.put_line('exit SUCCESS;');                                                                                                                             
+     CLOSE dtd_permited_values;                                                                                                                                                                                                                                                                   
    END IF;                                                                                                                                                              
  END;                                                                                                                                                                   

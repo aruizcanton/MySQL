@@ -29,7 +29,8 @@ DECLARE
    OWNER_DM                            VARCHAR2(60); 
    OWNER_MTDT                       VARCHAR2(60); 
    TABLESPACE_DIM                VARCHAR2(60); 
-   PREFIJO_DM                            VARCHAR2(60); 
+   PREFIJO_DM                            VARCHAR2(60);
+   NAME_DM                            VARCHAR(60);   
     
  BEGIN 
  
@@ -42,7 +43,9 @@ DECLARE
    SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM'; 
    SELECT VALOR INTO OWNER_MTDT FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_MTDT'; 
    SELECT VALOR INTO TABLESPACE_DIM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_DIM'; 
-   SELECT VALOR INTO PREFIJO_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'PREFIJO_DM'; 
+   SELECT VALOR INTO PREFIJO_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'PREFIJO_DM';
+   SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';   
+   
    /* (20141219) FIN*/ 
  
 
@@ -50,8 +53,6 @@ DECLARE
    /* COMPROBAMOS QUE TENEMOS FILAS EN NUESTRA TABLA MTDT_PERMITED_VALUES  */ 
    IF num_filas > 0 THEN 
      /* hay filas en la tabla y por lo tanto el proceso tiene cosas que hacer  */ 
-     DBMS_OUTPUT.put_line('set echo on;'); 
-     DBMS_OUTPUT.put_line('whenever sqlerror exit 1;'); 
      DBMS_OUTPUT.put_line(''); 
      OPEN dtd_permited_values; 
      LOOP 
@@ -60,11 +61,11 @@ DECLARE
        INTO reg_per_val; 
        EXIT WHEN dtd_permited_values%NOTFOUND; 
        clave_foranea :=0; 
-       DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' ;'); 
+       DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' CASCADE;'); 
      END LOOP; 
      CLOSE dtd_permited_values; 
      DBMS_OUTPUT.put_line(''); 
-     DBMS_OUTPUT.put_line('set echo off;'); 
-     DBMS_OUTPUT.put_line('exit SUCCESS;'); 
+
    END IF; 
  END; 
+ /
