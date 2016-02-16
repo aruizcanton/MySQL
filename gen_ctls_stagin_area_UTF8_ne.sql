@@ -473,7 +473,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '   #Se especifican parametros usuario y la BD');
     --UTL_FILE.put_line(fich_salida_sh, '   BD_SID=$1');
     --UTL_FILE.put_line(fich_salida_sh, '   USER=$2');
-    UTL_FILE.put_line(fich_salida_sh, '   EjecutaInserMonitoreo ${BD_SID} ${BD_USUARIO} ${' || NAME_DM || '_SQL}/insert_monitoreo.sql ' || 'load_SA_' || reg_summary.CONCEPT_NAME || '.sh 1 1 "''${INICIO_PASO_TMR}''" systimestamp ${FCH_DATOS} ${FCH_CARGA}' || ' >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log 2>&' || '1' );
+    UTL_FILE.put_line(fich_salida_sh, '   EjecutaInserMonitoreo ${BD_SID} ${BD_USUARIO} ${' || NAME_DM || '_SQL}/insert_monitoreo.sql ' || 'load_SA_' || reg_summary.CONCEPT_NAME || '.sh 1 1 "''${INICIO_PASO_TMR}''" current_timestamp ${FCH_DATOS} ${FCH_CARGA}' || ' >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log 2>&' || '1' );
     UTL_FILE.put_line(fich_salida_sh, '   if [ $? -ne 0 ]');
     UTL_FILE.put_line(fich_salida_sh, '   then');
     UTL_FILE.put_line(fich_salida_sh, '      SUBJECT="${INTERFAZ}:Error en InsertarFinFallido"');
@@ -489,7 +489,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '   #Se especifican parametros usuario y la BD');
     --UTL_FILE.put_line(fich_salida_sh, '   BD_SID=$1');
     --UTL_FILE.put_line(fich_salida_sh, '   USER=$2');
-    UTL_FILE.put_line(fich_salida_sh, '   EjecutaInserMonitoreo ${BD_SID} ${BD_USUARIO} ${' || NAME_DM || '_SQL}/insert_monitoreo.sql ' || 'load_SA_' || reg_summary.CONCEPT_NAME || '.sh 1 0 "''${INICIO_PASO_TMR}''" systimestamp ${FCH_DATOS} ${FCH_CARGA} ${TOT_INSERTADOS} 0 0 ${TOT_LEIDOS} ${TOT_RECHAZADOS}' || ' >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log 2>&' || '1' );
+    UTL_FILE.put_line(fich_salida_sh, '   EjecutaInserMonitoreo ${BD_SID} ${BD_USUARIO} ${' || NAME_DM || '_SQL}/insert_monitoreo.sql ' || 'load_SA_' || reg_summary.CONCEPT_NAME || '.sh 1 0 "''${INICIO_PASO_TMR}''" current_timestamp ${FCH_DATOS} ${FCH_CARGA} ${TOT_INSERTADOS} 0 0 ${TOT_LEIDOS} ${TOT_RECHAZADOS}' || ' >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log 2>&' || '1' );
     UTL_FILE.put_line(fich_salida_sh, '   if [ $? -ne 0 ]');
     UTL_FILE.put_line(fich_salida_sh, '   then');
     UTL_FILE.put_line(fich_salida_sh, '      SUBJECT="${INTERFAZ}:Error en InsertarFinOK"');
@@ -612,7 +612,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, 'fi');
     UTL_FILE.put_line(fich_salida_sh, '');
     UTL_FILE.put_line(fich_salida_sh, 'INICIO_PASO_TMR=`mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} 2> /dev/null << EOF');
-    UTL_FILE.put_line(fich_salida_sh, 'SELECT current_timestamp();');
+    UTL_FILE.put_line(fich_salida_sh, 'SELECT date_format(current_timestamp(), ''%Y%m%d%k%i%s'');');
     UTL_FILE.put_line(fich_salida_sh, 'QUIT');
     UTL_FILE.put_line(fich_salida_sh, 'EOF`');
     --UTL_FILE.put_line(fich_salida_sh, 'echo "Inicio de la carga de la tabla de staging ' || 'SA' || '_' || reg_summary.CONCEPT_NAME || '."' || ' >> ' || '$MVNO_LOG/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_$FCH_CARGA.log');
@@ -626,7 +626,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '# Llamada a sql_plus');
     UTL_FILE.put_line(fich_salida_sh, 'mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} << EOF >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ' ||  '2>&' || '1');
     UTL_FILE.put_line(fich_salida_sh, '');
-    UTL_FILE.put_line(fich_salida_sh, '  ' || 'call ' || 'pre_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');
+    UTL_FILE.put_line(fich_salida_sh, '  ' || 'call ' || NAME_DM || '.' || 'pre_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');
     UTL_FILE.put_line(fich_salida_sh, 'quit');
     UTL_FILE.put_line(fich_salida_sh, 'EOF');
     UTL_FILE.put_line(fich_salida_sh, '');
@@ -699,11 +699,11 @@ BEGIN
       --UTL_FILE.put_line(fich_salida_sh, '  cat ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl | sed "s/MY_FILE/${NOMBRE_FICH_DATOS}/g" > ' || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       --UTL_FILE.put_line(fich_salida_sh, '  sed -e ''s/MY_FILE/${NOMBRE_FICH_DATOS}/'' -e ''s/_DIR_DATOS_/${MVNO_FUENTE}\/${FCH_CARGA}/'' -e ''s/_NOMBRE_INTERFACE_/${NOMBRE_FICH_DATOS}/'' -e ''s/_FCH_DATOS_/${FCH_DATOS}/'' ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  awk ''');
-      UTL_FILE.put_line(fich_salida_sh, '  $0 ~ /^INFILE/ {printf "%s %s\n",$0, parametro; }');
+      UTL_FILE.put_line(fich_salida_sh, '  $0 ~ /^INFILE/ {printf "%s \"%s\"\n",$0, parametro; }');
       UTL_FILE.put_line(fich_salida_sh, '  $0 !~ /^INFILE/ {print $0; }');
       UTL_FILE.put_line(fich_salida_sh, '  '' parametro="${FILE}" ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  # Llamada a LOADER');
-      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
+      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
       UTL_FILE.put_line(fich_salida_sh, '');
       UTL_FILE.put_line(fich_salida_sh, '  err_salida=$?');
       UTL_FILE.put_line(fich_salida_sh, '');
@@ -721,14 +721,13 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero ctl generado en vuelo.');
       UTL_FILE.put_line(fich_salida_sh, '  rm ${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_LEIDOS=`grep "^Query OK, [0-9]* rows affected" ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log | cut -d"," -f2 | sed -e ''s/row[s]* affected//''-e ''s/ *//''`');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=`grep "^Records: " ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log | cut -d":" -f2 | sed -e ''s/ Deleted//'' -e ''s/ *//''');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=`grep "Skipped:" ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log | cut -d":" -f3 | sed -e ''s/ Skipped//'' -e''s/ *//''`');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_LEIDOS=`awk ''/^Query OK,/ {print $3}'' ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log`');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=`awk ''/^Records:/ {print $2}'' ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log`');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=`awk ''/^Records:/ {print $6}'' ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log`');
       UTL_FILE.put_line(fich_salida_sh, '  TOT_LEIDOS=`expr ${TOT_LEIDOS} + ${REG_LEIDOS}`');
       UTL_FILE.put_line(fich_salida_sh, '  TOT_INSERTADOS=`expr ${TOT_INSERTADOS} + ${REG_INSERTADOS}`');
       UTL_FILE.put_line(fich_salida_sh, '  TOT_RECHAZADOS=`expr ${TOT_RECHAZADOS} + ${REG_RECHAZADOS}`');
       UTL_FILE.put_line(fich_salida_sh, '');
-      
       UTL_FILE.put_line(fich_salida_sh, 'done');
       /* (20150605) FIN */
     else
@@ -745,11 +744,11 @@ BEGIN
       --UTL_FILE.put_line(fich_salida_sh, '  cat ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl | sed "s/MY_FILE/${NOMBRE_FICH_DATOS}/g" > ' || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       --UTL_FILE.put_line(fich_salida_sh, '  sed -e ''s/_DIR_DATOS_/${MVNO_FUENTE}\/${FCH_CARGA}/'' -e ''s/_NOMBRE_INTERFACE_/${NOMBRE_FICH_DATOS}/'' -e ''s/_FCH_DATOS_/${FCH_DATOS}/'' ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  awk ''');
-      UTL_FILE.put_line(fich_salida_sh, '  $0 ~ /^INFILE/ {printf "%s %s\n",$0, parametro; }');
+      UTL_FILE.put_line(fich_salida_sh, '  $0 ~ /^INFILE/ {printf "%s \"%s\"\n",$0, parametro; }');
       UTL_FILE.put_line(fich_salida_sh, '  $0 !~ /^INFILE/ {print $0; }');
       UTL_FILE.put_line(fich_salida_sh, '  '' parametro="${FILE}" ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  # Llamada a LOADER');
-      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
+      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
       UTL_FILE.put_line(fich_salida_sh, '');
       UTL_FILE.put_line(fich_salida_sh, '  err_salida=$?');
       UTL_FILE.put_line(fich_salida_sh, '');
@@ -767,9 +766,9 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, '  #Borramos el fichero ctl generado en vuelo.');
       UTL_FILE.put_line(fich_salida_sh, '  rm ${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_LEIDOS=`grep "^Query OK, [0-9]* rows affected" ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log | cut -d"," -f2 | sed -e ''s/row[s]* affected//''-e ''s/ *//''`');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=`grep "^Records: " ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log | cut -d":" -f2 | sed -e ''s/ Deleted//'' -e ''s/ *//''');
-      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=`grep "Skipped:" ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}_${FECHA_HORA}' || '.log | cut -d":" -f3 | sed -e ''s/ Skipped//'' -e''s/ *//''`');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_LEIDOS=`awk ''/^Query OK,/ {print $3}'' ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log`');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_INSERTADOS=`awk ''/^Records:/ {print $2}'' ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log`');
+      UTL_FILE.put_line(fich_salida_sh, '  REG_RECHAZADOS=`awk ''/^Records:/ {print $6}'' ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log`');
       UTL_FILE.put_line(fich_salida_sh, '  TOT_LEIDOS=`expr ${TOT_LEIDOS} + ${REG_LEIDOS}`');
       UTL_FILE.put_line(fich_salida_sh, '  TOT_INSERTADOS=`expr ${TOT_INSERTADOS} + ${REG_INSERTADOS}`');
       UTL_FILE.put_line(fich_salida_sh, '  TOT_RECHAZADOS=`expr ${TOT_RECHAZADOS} + ${REG_RECHAZADOS}`');
