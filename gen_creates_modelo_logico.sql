@@ -61,6 +61,7 @@ DECLARE
   OWNER_DM          VARCHAR2(60);
   OWNER_MTDT        VARCHAR2(60);
   TABLESPACE_DIM    VARCHAR2(60);
+  NAME_DM                            VARCHAR(60);  
   
 BEGIN
 
@@ -71,6 +72,7 @@ BEGIN
   SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';
   SELECT VALOR INTO OWNER_MTDT FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_MTDT';
   SELECT VALOR INTO TABLESPACE_DIM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'TABLESPACE_DIM';
+  SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';  
   
   /* (20141219) FIN*/
 
@@ -89,7 +91,7 @@ BEGIN
       nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
       v_CVE_DIA_es_col:=0;
       v_CVE_MES_es_col:=0;
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
       DBMS_OUTPUT.put_line('(');
       concept_name := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5);
       OPEN c_mtdt_modelo_logico_COLUMNA (r_mtdt_modelo_logico_TABLA.TABLE_NAME);
@@ -591,7 +593,7 @@ BEGIN
         /* Aquellas que no tienen ningún tipo de carga inicial */
         --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ' CASCADE CONSTRAINTS;');
         --DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido);
-        DBMS_OUTPUT.put_line('CREATE TABLE '  || 'T_' || nombre_tabla_reducido);
+        DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'T_' || nombre_tabla_reducido);
         DBMS_OUTPUT.put_line('(');
         concept_name := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5);
         OPEN c_mtdt_modelo_logico_COLUMNA (r_mtdt_modelo_logico_TABLA.TABLE_NAME);
@@ -837,7 +839,7 @@ BEGIN
           DBMS_OUTPUT.put_line('');        
           /* Primero el INSERT "NO APLICA" */
           --DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
-          DBMS_OUTPUT.put_line('INSERT INTO ' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
+          DBMS_OUTPUT.put_line('INSERT INTO ' || NAME_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN c_mtdt_modelo_logico_COLUMNA (r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           primera_col := 1;
@@ -992,7 +994,7 @@ BEGIN
           CLOSE c_mtdt_modelo_logico_COLUMNA;
           /* Siguiente insert "GENERICO" */
           --DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
-          DBMS_OUTPUT.put_line('INSERT INTO '  || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
+          DBMS_OUTPUT.put_line('INSERT INTO ' || NAME_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN c_mtdt_modelo_logico_COLUMNA (r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           primera_col := 1;
@@ -1147,7 +1149,7 @@ BEGIN
           CLOSE c_mtdt_modelo_logico_COLUMNA;
           /* Siguiente INSERT "NO INFORMADO" */
           --DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
-          DBMS_OUTPUT.put_line('INSERT INTO ' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
+          DBMS_OUTPUT.put_line('INSERT INTO ' || NAME_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN c_mtdt_modelo_logico_COLUMNA (r_mtdt_modelo_logico_TABLA.TABLE_NAME);
           primera_col := 1;
