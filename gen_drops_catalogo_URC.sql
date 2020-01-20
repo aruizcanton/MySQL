@@ -66,6 +66,7 @@ DECLARE
      CLOSE dtd_permited_values; 
      DBMS_OUTPUT.put_line(''); 
 
-   END IF; 
+   END IF;
+   DBMS_OUTPUT.put_line('quit');    
  END; 
  /
