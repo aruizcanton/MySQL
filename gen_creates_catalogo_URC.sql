@@ -117,8 +117,13 @@ DBMS_OUTPUT.ENABLE (1000000);
         DBMS_OUTPUT.put_line(', CONSTRAINT ' || reg_per_val. AGREGATION || '_FK' || ' FOREIGN KEY (CVE_' || substr(reg_per_val. AGREGATION,5) || ')'); 
         DBMS_OUTPUT.put_line('REFERENCES ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || substr(reg_per_val. AGREGATION,5) || ' (' || 'CVE_' || substr(reg_per_val. AGREGATION,5) || ')'); 
       END IF; 
-      DBMS_OUTPUT.put_line(')'); 
-      DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_DIM || ';'); /* Parentesis final del create*/       
+      DBMS_OUTPUT.put_line(')');
+      /* (20190925) ANGEL RUIZ. BUG. Si no hay tablespace no se escribe */
+      --DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_DIM || ';'); /* Parentesis final del create*/       
+      if (TABLESPACE_DIM is not null) then
+        DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_DIM);
+      end if;
+      DBMS_OUTPUT.put_line(';');
       
       /* GENERO LOS TRES INSERTS POR DEFECTO QUE TIENE CADA UNA DE LAS TABLAS CREADAS*/ 
       if (reg_per_val.ITEM_NAME <> 'FUENTE') then /* esto lo meto a posteriori */ 
@@ -219,4 +224,6 @@ DBMS_OUTPUT.ENABLE (1000000);
     END LOOP; 
     CLOSE dtd_permited_values; 
   END IF; 
+  DBMS_OUTPUT.put_line('quit'); 
+  
 END; 
