@@ -16,8 +16,15 @@
       TYPE,
       SEPARATOR,
       DELAYED
-  FROM MTDT_INTERFACE_SUMMARY;
-
+  FROM MTDT_INTERFACE_SUMMARY
+  --where
+--  TRIM(CONCEPT_NAME) in ('USERS', 'COURSES', 'CATEGORIES', 'GROUPS', 'BRANCHES', 'TESTS', 'TEST_ANSWERS'
+--  , 'SURVEY', 'SURVEYANSWERS', 'BRANCHES_COURSES', 'BRANCHES_USERS', 'CATEGORIES_COURSES', 'COURSE_USERS'
+--  , 'COURSE_UNITS', 'GROUPS_COURSES', 'GROUPS_USERS', 'USER_CERTIFICATIONS', 'USER_BADGES', 'USER_PROGRESS_UNIT'
+--  , 'PROFILE', 'RASGOS', 'ROLES', 'OPS', 'CONSUMER_PREFER', 'WARNINGS', 'CONSUMPTION_PREFER', 'FORMULARIO', 'EVENTS');
+  --TRIM(CONCEPT_NAME) in ('VENTAS_USUARIO', 'VENTAS_MESA', 'VENTAS_TIPO_PAGO', 'PURCHASE', 'PROVIDER_IDENTITY', 'PROVIDER_ADDRESS', 'PROVIDER_CONTACT',
+  --'PRODUCT', 'OFFER', 'CATEGORY', 'ORDERS', 'USER', 'PRODUCT_CATEGORY')
+  ;
   CURSOR dtd_interfaz_summary_history
   IS
     SELECT 
@@ -117,7 +124,7 @@ BEGIN
       INTO reg_summary;
       EXIT WHEN dtd_interfaz_summary%NOTFOUND;
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SA_' || reg_summary.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'SA_' || reg_summary.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
@@ -143,9 +150,9 @@ BEGIN
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
-            DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+            DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`' || '          ' || tipo_col || ' NOT NULL');
           ELSE
-            DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col);
+            DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`' || '          ' || tipo_col);
           END IF;
           primera_col := 0;
         ELSE  /* si no es primera columna */
@@ -166,9 +173,9 @@ BEGIN
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
-            DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+            DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          ' || tipo_col || ' NOT NULL');
           ELSE
-            DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          '  || tipo_col);
+            DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          '  || tipo_col);
           END IF;
         END IF;
         IF upper(reg_datail.KEY) = 'S'  then
@@ -181,28 +188,32 @@ BEGIN
         END IF;
       END LOOP;
       CLOSE dtd_interfaz_detail;
-      IF (lista_pk.COUNT > 0 and lista_par .COUNT = 0) THEN
+      IF (lista_pk.COUNT > 0 and lista_par.COUNT = 0) THEN
         /* tenemos una tabla normal no particionada */
         DBMS_OUTPUT.put_line(',' || 'CONSTRAINT ' || reg_summary.CONCEPT_NAME || '_P' || ' PRIMARY KEY (');
         FOR indx IN lista_pk.FIRST .. lista_pk.LAST
         LOOP
           IF indx = lista_pk.LAST THEN
-            DBMS_OUTPUT.put_line(lista_pk (indx) || ') ');
+            DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`) ');
           ELSE
-            DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+            DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
           END IF;
         END LOOP;
       END IF;
-      DBMS_OUTPUT.put_line(')'); /* Parentesis final del create*/ 
-      DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+      DBMS_OUTPUT.put_line(')'); /* Parentesis final del create*/
+      /* (20190925) ANGEL RUIZ. BUG. Si no hay tablespace no se escribe */
+      if (TABLESPACE_SA is not null) then
+        DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+      end if;
+      
       /* tomamos el campo por el que va a estar particionada la tabla */
       if lista_par.COUNT > 0 then
         FOR indx IN lista_par.FIRST .. lista_par.LAST
         LOOP
           IF indx = lista_par.FIRST THEN
-            lista_campos_particion:= lista_par (indx);
+            lista_campos_particion:= '`' || lista_par (indx) || '`';
           ELSE
-            lista_campos_particion:=lista_campos_particion || ',' || lista_par (indx);
+            lista_campos_particion:=lista_campos_particion || ', `' || lista_par (indx) || '`';
           END IF;
         END LOOP;
         DBMS_OUTPUT.put_line('PARTITION BY RANGE COLUMNS (' || lista_campos_particion || ')');   
@@ -412,11 +423,11 @@ BEGIN
             IF indx = lista_pk.LAST THEN
               FOR indy IN lista_par.FIRST .. lista_par.LAST
               LOOP
-                DBMS_OUTPUT.put_line(lista_par(indy) || ', ');
+                DBMS_OUTPUT.put_line('`' || lista_par(indy) || '`, ');
               END LOOP;
-              DBMS_OUTPUT.put_line(lista_pk (indx) || ');');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`);');
             ELSE
-              DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
             END IF;
           END LOOP;
           --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary.CONCEPT_NAME || '_P;');
@@ -437,9 +448,9 @@ BEGIN
           FOR indx IN lista_pk.FIRST .. lista_pk.LAST
           LOOP
             IF indx = lista_pk.LAST THEN
-              DBMS_OUTPUT.put_line(lista_pk (indx) || ');');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`);');
             ELSE
-              DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
             END IF;
           END LOOP;
           --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary.CONCEPT_NAME || '_P;');
@@ -452,9 +463,9 @@ BEGIN
           FOR indy IN lista_par.FIRST .. lista_par.LAST
           LOOP
               IF indy = lista_par.LAST THEN
-                DBMS_OUTPUT.put_line(lista_par (indy) || '); ');
+                DBMS_OUTPUT.put_line('`' || lista_par (indy) || '`); ');
               ELSE
-                DBMS_OUTPUT.put_line(lista_par (indy) || ',');
+                DBMS_OUTPUT.put_line('`' || lista_par (indy) || '`,');
               END IF;
           END LOOP;
           --DBMS_OUTPUT.put_line('NOLOGGING LOCAL;');
@@ -474,7 +485,7 @@ BEGIN
           end if;
         end loop;
         if v_encontrado = 'Y' then
-          DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SAD_' || reg_summary.CONCEPT_NAME);
+          DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'SAD_' || reg_summary.CONCEPT_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
           primera_col := 1;
@@ -500,9 +511,9 @@ BEGIN
               END CASE;
               IF reg_datail.NULABLE = 'N'
               THEN
-                DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+                DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`' || '          ' || tipo_col || ' NOT NULL');
               ELSE
-                DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col);
+                DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`' || '          ' || tipo_col);
               END IF;
               primera_col := 0;
             ELSE  /* si no es primera columna */
@@ -523,9 +534,9 @@ BEGIN
               END CASE;
               IF reg_datail.NULABLE = 'N'
               THEN
-                DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+                DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          ' || tipo_col || ' NOT NULL');
               ELSE
-                DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          '  || tipo_col);
+                DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          '  || tipo_col);
               END IF;
             END IF;
             IF upper(reg_datail.KEY) = 'S'  then
@@ -546,14 +557,18 @@ BEGIN
             FOR indx IN lista_pk.FIRST .. lista_pk.LAST
             LOOP
               IF indx = lista_pk.LAST THEN
-                DBMS_OUTPUT.put_line(lista_pk (indx) || ') ');
+                DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`) ');
               ELSE
-                DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+                DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
               END IF;
             END LOOP;
           END IF;
-          DBMS_OUTPUT.put_line(')'); /* Parentesis final del create*/ 
-          DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+          DBMS_OUTPUT.put_line(')'); /* Parentesis final del create*/
+          /* (20190925) ANGEL RUIZ. BUG. Si no hay tablespace no se escribe */
+          if (TABLESPACE_SA is not null) then
+            DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+          end if;          
+          --DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
           DBMS_OUTPUT.put_line(';'); /* FIN CREATE */
           DBMS_OUTPUT.put_line(''); /* FIN CREATE */
           lista_pk.DELETE;      /* Borramos los elementos de la lista */
@@ -574,7 +589,7 @@ BEGIN
       INTO reg_summary_history;
       EXIT WHEN dtd_interfaz_summary_history%NOTFOUND;  
       --DBMS_OUTPUT.put_line('DROP TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME || ' CASCADE CONSTRAINTS;');
-      DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME);
+      DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'SAH_' || reg_summary_history.CONCEPT_NAME);
       DBMS_OUTPUT.put_line('(');
       OPEN dtd_interfaz_detail (reg_summary_history.CONCEPT_NAME, reg_summary_history.SOURCE);
       primera_col := 1;
@@ -600,9 +615,9 @@ BEGIN
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
-            DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+            DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`          ' || tipo_col || ' NOT NULL');
           ELSE
-            DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col);
+            DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`          ' || tipo_col);
           END IF;
           primera_col := 0;
         ELSE  /* si no es primera columna */
@@ -623,9 +638,9 @@ BEGIN
           END CASE;
           IF reg_datail.NULABLE = 'N'
           THEN
-            DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+            DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          ' || tipo_col || ' NOT NULL');
           ELSE
-            DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          '  || tipo_col);
+            DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          '  || tipo_col);
           END IF;
         END IF;
         IF upper(reg_datail.KEY) = 'S'  then
@@ -642,7 +657,7 @@ BEGIN
       /* o por el contrario la tabla de STAGING ya tenia un campo de particionado */
       if (lista_par.count = 0) then
         /* La tabla de STAGING no esta particionada aunque su historica si debe estarlo*/
-        DBMS_OUTPUT.put_line(', CVE_DIA          BIGINT'); /* Añado una columna de particionado */
+        DBMS_OUTPUT.put_line(', `CVE_DIA`          BIGINT'); /* Añado una columna de particionado */
         lista_par.EXTEND;
         lista_par(lista_par.LAST) := 'CVE_DIA'; /* La añado a la lista de campos por los que particionar mi tabla historica */
         if (lista_pk.count > 0) then
@@ -652,16 +667,21 @@ BEGIN
         end if;
       end if;
       DBMS_OUTPUT.put_line(')'); /* Parentesis final del create */
+      /* (20190925) ANGEL RUIZ. BUG. Si no hay tablespace no se escribe */      
       --DBMS_OUTPUT.put_line('NOLOGGING');
-      DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+      --DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+      if (TABLESPACE_SA is not null) then
+        DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+      end if;          
+      
       /* tomamos el campo por el que va a estar particionada la tabla */
       if lista_par.COUNT > 0 then
         FOR indx IN lista_par.FIRST .. lista_par.LAST
         LOOP
           IF indx = lista_par.FIRST THEN
-            lista_campos_particion:= lista_par (indx);
+            lista_campos_particion:= '`' || lista_par (indx) || '`';
           ELSE
-            lista_campos_particion:=lista_campos_particion || ',' || lista_par (indx);
+            lista_campos_particion:=lista_campos_particion || ',`' || lista_par (indx) || '`';
           END IF;
         END LOOP;
         DBMS_OUTPUT.put_line('PARTITION BY RANGE (' || lista_campos_particion || ')');   
@@ -772,11 +792,11 @@ BEGIN
             IF indx = lista_pk.LAST THEN
               FOR indy IN lista_par.FIRST .. lista_par.LAST
               LOOP
-                DBMS_OUTPUT.put_line(lista_par(indy) || ', ');
+                DBMS_OUTPUT.put_line('`' || lista_par(indy) || '`, ');
               END LOOP;
-              DBMS_OUTPUT.put_line(lista_pk (indx) || '); ');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`); ');
             ELSE
-              DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
             END IF;
           END LOOP;
           --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary_history.CONCEPT_NAME || '_HP;');
@@ -797,9 +817,9 @@ BEGIN
           FOR indx IN lista_pk.FIRST .. lista_pk.LAST
           LOOP
             IF indx = lista_pk.LAST THEN
-              DBMS_OUTPUT.put_line(lista_pk (indx) || '); ');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`); ');
             ELSE
-              DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+              DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
             END IF;
           END LOOP;
           --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary_history.CONCEPT_NAME || '_HP;');
@@ -812,9 +832,9 @@ BEGIN
           FOR indy IN lista_par.FIRST .. lista_par.LAST
           LOOP
               IF indy = lista_par.LAST THEN
-                DBMS_OUTPUT.put_line(lista_par (indy) || '); ');
+                DBMS_OUTPUT.put_line('`' || lista_par (indy) || '`); ');
               ELSE
-                DBMS_OUTPUT.put_line(lista_par (indy) || ',');
+                DBMS_OUTPUT.put_line('`' || lista_par (indy) || '`,');
               END IF;
           END LOOP;
           --DBMS_OUTPUT.put_line('NOLOGGING LOCAL;');
@@ -837,7 +857,7 @@ BEGIN
         end loop;
         if v_encontrado = 'Y' then
 
-          DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || 'SADH_' || reg_summary_history.CONCEPT_NAME);
+          DBMS_OUTPUT.put_line('CREATE TABLE ' || OWNER_SA || '.' || 'SADH_' || reg_summary_history.CONCEPT_NAME);
           DBMS_OUTPUT.put_line('(');
           OPEN dtd_interfaz_detail (reg_summary_history.CONCEPT_NAME, reg_summary_history.SOURCE);
           primera_col := 1;
@@ -863,9 +883,9 @@ BEGIN
               END CASE;
               IF reg_datail.NULABLE = 'N'
               THEN
-                DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+                DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`          ' || tipo_col || ' NOT NULL');
               ELSE
-                DBMS_OUTPUT.put_line(reg_datail.COLUMNA || '          ' || tipo_col);
+                DBMS_OUTPUT.put_line('`' || reg_datail.COLUMNA || '`          ' || tipo_col);
               END IF;
               primera_col := 0;
             ELSE  /* si no es primera columna */
@@ -886,9 +906,9 @@ BEGIN
               END CASE;
               IF reg_datail.NULABLE = 'N'
               THEN
-                DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          ' || tipo_col || ' NOT NULL');
+                DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          ' || tipo_col || ' NOT NULL');
               ELSE
-                DBMS_OUTPUT.put_line(', ' || reg_datail.COLUMNA || '          '  || tipo_col);
+                DBMS_OUTPUT.put_line(', `' || reg_datail.COLUMNA || '`          '  || tipo_col);
               END IF;
             END IF;
             IF upper(reg_datail.KEY) = 'S'  then
@@ -902,12 +922,12 @@ BEGIN
           END LOOP;
           CLOSE dtd_interfaz_detail;
           /*(20151123) Angel Ruiz. creo el campo BAN_DESCARTE en las tablas SADH_*/
-          DBMS_OUTPUT.put_line(', BAN_DESCARTE' ||  '          '  || 'VARCHAR(1)');
+          DBMS_OUTPUT.put_line(', `BAN_DESCARTE`' ||  '          '  || 'VARCHAR(1)');
           /* Ahora miramos si he de crear un campo de particionado para la tabla historica */
           /* o por el contrario la tabla de STAGING ya tenia un campo de particionado */
           if (lista_par.count = 0) then
             /* La tabla de STAGING no esta particionada aunque su historica si debe estarlo*/
-            DBMS_OUTPUT.put_line(', CVE_DIA          BIGINT'); /* Añado una columna de particionado */
+            DBMS_OUTPUT.put_line(', `CVE_DIA`          BIGINT'); /* Añado una columna de particionado */
             lista_par.EXTEND;
             lista_par(lista_par.LAST) := 'CVE_DIA'; /* La añado a la lista de campos por los que particionar mi tabla historica */
             if (lista_pk.count > 0) then
@@ -918,15 +938,19 @@ BEGIN
           end if;
           DBMS_OUTPUT.put_line(')'); /* Parentesis final del create*/
           --DBMS_OUTPUT.put_line('NOLOGGING');
-          DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+          /* (20190925) ANGEL RUIZ. BUG. Si no hay tablespace no se escribe */          
+          if (TABLESPACE_SA is not null) then
+            DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
+          end if;                    
+          --DBMS_OUTPUT.put_line('TABLESPACE ' || TABLESPACE_SA);
           /* tomamos el campo por el que va a estar particionada la tabla */
           if lista_par.COUNT > 0 then
             FOR indx IN lista_par.FIRST .. lista_par.LAST
             LOOP
               IF indx = lista_par.FIRST THEN
-                lista_campos_particion:= lista_par (indx);
+                lista_campos_particion:= '`' || lista_par (indx) || '`';
               ELSE
-                lista_campos_particion:=lista_campos_particion || ',' || lista_par (indx);
+                lista_campos_particion:=lista_campos_particion || ',`' || lista_par (indx) || '`';
               END IF;
             END LOOP;
             DBMS_OUTPUT.put_line('PARTITION BY RANGE (' || lista_campos_particion || ')');   
@@ -1000,11 +1024,11 @@ BEGIN
                 IF indx = lista_pk.LAST THEN
                   FOR indy IN lista_par.FIRST .. lista_par.LAST
                   LOOP
-                    DBMS_OUTPUT.put_line(lista_par(indy) || ', ');
+                    DBMS_OUTPUT.put_line('`' || lista_par(indy) || '`, ');
                   END LOOP;
-                  DBMS_OUTPUT.put_line(lista_pk (indx) || '); ');
+                  DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`); ');
                 ELSE
-                  DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+                  DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
                 END IF;
               END LOOP;
               --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary_history.CONCEPT_NAME || 'DHP;');
@@ -1014,9 +1038,9 @@ BEGIN
               FOR indx IN lista_pk.FIRST .. lista_pk.LAST
               LOOP
                 IF indx = lista_pk.LAST THEN
-                  DBMS_OUTPUT.put_line(lista_pk (indx) || '); ');
+                  DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`); ');
                 ELSE
-                  DBMS_OUTPUT.put_line(lista_pk (indx) || ',');
+                  DBMS_OUTPUT.put_line('`' || lista_pk (indx) || '`,');
                 END IF;
               END LOOP;
               --DBMS_OUTPUT.put_line('USING INDEX ' || reg_summary_history.CONCEPT_NAME || 'DHP;');
@@ -1029,9 +1053,9 @@ BEGIN
               FOR indy IN lista_par.FIRST .. lista_par.LAST
               LOOP
                 IF indy = lista_par.LAST THEN
-                  DBMS_OUTPUT.put_line(lista_par (indy) || '); ');
+                  DBMS_OUTPUT.put_line('`' || lista_par (indy) || '`); ');
                 ELSE
-                  DBMS_OUTPUT.put_line(lista_par (indy) || ',');
+                  DBMS_OUTPUT.put_line('`' || lista_par (indy) || '`,');
                 END IF;
               END LOOP;
               --DBMS_OUTPUT.put_line('NOLOGGING LOCAL;');
