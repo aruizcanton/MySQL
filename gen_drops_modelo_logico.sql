@@ -18,7 +18,8 @@ DECLARE
       TRIM(VDEFAULT) "VDEFAULT"
     FROM MTDT_MODELO_DETAIL
     WHERE
-      TRIM(TABLE_NAME) = table_name_in;
+      TRIM(TABLE_NAME) = table_name_in
+    order by POSITION;
 
 /* (20150907) Angel Ruiz . FIN NF: Se crea una tabla de metadato MTDT_MODELO_SUMMARY y otra MTDT_MODELO_DETAIL */
   r_mtdt_modelo_logico_TABLA                                          c_mtdt_modelo_logico_TABLA%rowtype;
@@ -68,7 +69,10 @@ BEGIN
       FETCH c_mtdt_modelo_logico_TABLA
       INTO r_mtdt_modelo_logico_TABLA;
       EXIT WHEN c_mtdt_modelo_logico_TABLA%NOTFOUND;
-      nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
+      --nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
+      --nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, (instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')+1)); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
+      nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')+1); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
+
       DBMS_OUTPUT.put_line('DROP TABLE IF EXISTS ' || NAME_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME || ' CASCADE;');
       --DBMS_OUTPUT.put_line('');
       /***************************/
@@ -85,5 +89,6 @@ BEGIN
   DBMS_OUTPUT.put_line('');        
   --DBMS_OUTPUT.put_line('set echo off;');
   --DBMS_OUTPUT.put_line('exit SUCCESS;');
+  DBMS_OUTPUT.put_line('quit');
 END;
 
