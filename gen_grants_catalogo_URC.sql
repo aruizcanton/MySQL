@@ -63,11 +63,13 @@ DECLARE
        INTO reg_per_val;                                                                                                                                                
        EXIT WHEN dtd_permited_values%NOTFOUND;                                                                                                                          
        --clave_foranea :=0;                                                                                                                                             
-       DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO '''|| OWNER_TC || '''@''localhost'';');
-       DBMS_OUTPUT.put_line('GRANT select  on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO ''' || OWNER_DWH || '''@''localhost'';');                       
-       DBMS_OUTPUT.put_line('GRANT select  on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME ||' TO ''' || OWNER_RD || '''@''localhost'';');                     
+       DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO '''|| OWNER_TC || '''@''%'';');
+       DBMS_OUTPUT.put_line('GRANT select  on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' TO ''' || OWNER_DWH || '''@''%'';');                       
+       DBMS_OUTPUT.put_line('GRANT select  on ' || NAME_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME ||' TO ''' || OWNER_RD || '''@''%'';');                     
        DBMS_OUTPUT.put_line('');                                                                                                                                        
      END LOOP;                                                                                                                                                          
      CLOSE dtd_permited_values;                                                                                                                                                                                                                                                                   
-   END IF;                                                                                                                                                              
+   END IF;
+   DBMS_OUTPUT.put_line('quit');
+   
  END;                                                                                                                                                                   
