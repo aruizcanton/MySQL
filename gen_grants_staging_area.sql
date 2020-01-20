@@ -9,8 +9,14 @@ DECLARE
       TYPE,
       SEPARATOR,
       DELAYED
-    FROM MTDT_INTERFACE_SUMMARY;
-    
+    FROM MTDT_INTERFACE_SUMMARY
+    --where
+--  TRIM(CONCEPT_NAME) in ('USERS', 'COURSES', 'CATEGORIES', 'GROUPS', 'BRANCHES', 'TESTS', 'TEST_ANSWERS'
+--  , 'SURVEY', 'SURVEYANSWERS', 'BRANCHES_COURSES', 'BRANCHES_USERS', 'CATEGORIES_COURSES', 'COURSE_USERS'
+--  , 'COURSE_UNITS', 'GROUPS_COURSES', 'GROUPS_USERS', 'USER_CERTIFICATIONS', 'USER_BADGES', 'USER_PROGRESS_UNIT'
+--  , 'PROFILE', 'RASGOS', 'ROLES', 'OPS', 'CONSUMER_PREFER', 'WARNINGS', 'CONSUMPTION_PREFER', 'FORMULARIO', 'EVENTS');
+  --TRIM(CONCEPT_NAME) in ('VENTAS_USUARIO', 'VENTAS_MESA', 'VENTAS_TIPO_PAGO')
+  ;    
   CURSOR dtd_interfaz_summary_history
   IS
     SELECT 
@@ -86,9 +92,9 @@ BEGIN
     FETCH dtd_interfaz_summary
       INTO reg_summary;
       EXIT WHEN dtd_interfaz_summary%NOTFOUND;
-      DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''localhost'';');
+      DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''%'';');
       --DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME || ' TO ' || OWNER_DM || ';');
-      DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''localhost'';');
+      DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''%'';');
       if v_existe_tablas_RE = 1 then
         /* Existen tablas de inyeccion */
         v_encontrado:='N';
@@ -99,9 +105,9 @@ BEGIN
           end if;
         end loop;
         if v_encontrado = 'Y' then
-          DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SAD_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''localhost'';');
+          DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SAD_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''%'';');
           --DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || OWNER_SA || '.SAD_' || reg_summary.CONCEPT_NAME || ' TO ' || OWNER_DM || ';');
-          DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SAD_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''localhost'';');
+          DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SAD_' || reg_summary.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''%'';');
         end if;
       end if;
       /* (20151118) Angel Ruiz. FIN NF: Creacion de tablas para inyeccion SAD */
@@ -120,9 +126,9 @@ BEGIN
     FETCH dtd_interfaz_summary_history
       INTO reg_summary_history;
       EXIT WHEN dtd_interfaz_summary_history%NOTFOUND;
-      DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SAH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''localhost'';');
+      DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SAH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''%'';');
       --DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SAH_' || reg_summary_history.CONCEPT_NAME || ' TO ' || OWNER_DM || ';');
-      DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SAH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''localhost'';');
+      DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SAH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''%'';');
       /* (20151118) Angel Ruiz. NF: Creacion de tablas para inyeccion SAD */
       if v_existe_tablas_RE = 1 then
         /* Existen tablas de inyeccion */
@@ -134,9 +140,9 @@ BEGIN
           end if;
         end loop;
         if v_encontrado = 'Y' then
-          DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SADH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''localhost'';');
+          DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SADH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_TC || '''@''%'';');
           --DBMS_OUTPUT.put_line('GRANT select, insert, update, delete on ' || NAME_DM || '.SADH_' || reg_summary_history.CONCEPT_NAME || ' TO ' || OWNER_DM || ';');
-          DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SADH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''localhost'';');
+          DBMS_OUTPUT.put_line('GRANT select on ' || NAME_DM || '.SADH_' || reg_summary_history.CONCEPT_NAME || ' TO ''' || OWNER_DWH || '''@''%'';');
         end if;
       end if;
       /* (20151118) Angel Ruiz. FIN NF: Creacion de tablas para inyeccion SAD */
