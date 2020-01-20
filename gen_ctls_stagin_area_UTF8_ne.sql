@@ -15,8 +15,13 @@ DECLARE
       TRIM(HISTORY) "HISTORY"
     FROM MTDT_INTERFACE_SUMMARY    
     WHERE SOURCE <> 'SA'  -- Este origen es el que se ha considerado para las dimensiones que son de integracion ya que se cargan a partir de otras dimensiones de SA 
-    --and CONCEPT_NAME in ('TRAFE_CU_MVNO', 'TRAFD_CU_MVNO', 'TRAFV_CU_MVNO');
-    and CONCEPT_NAME in ('APN');
+--    and CONCEPT_NAME in ('USERS', 'COURSES', 'CATEGORIES', 'GROUPS', 'BRANCHES', 'TESTS', 'TEST_ANSWERS'
+--  , 'SURVEY', 'SURVEYANSWERS', 'BRANCHES_COURSES', 'BRANCHES_USERS', 'CATEGORIES_COURSES', 'COURSE_USERS'
+--  , 'COURSE_UNITS', 'GROUPS_COURSES', 'GROUPS_USERS', 'USER_CERTIFICATIONS', 'USER_BADGES', 'USER_PROGRESS_UNIT'
+--  , 'PROFILE', 'RASGOS', 'ROLES', 'OPS', 'CONSUMER_PREFER', 'WARNINGS', 'CONSUMPTION_PREFER', 'FORMULARIO', 'EVENTS');
+--    and TRIM(CONCEPT_NAME) in ('VENTAS_USUARIO', 'VENTAS_MESA', 'VENTAS_TIPO_PAGO')
+    ;  
+    --and CONCEPT_NAME in ('APN');
     --AND DELAYED = 'S';
     --WHERE CONCEPT_NAME NOT IN ( 'EMPRESA', 'ESTADO_CEL', 'FINALIZACION_LLAMADA', 'POSICION_TRAZO_LLAMADA', 'TRONCAL', 'TIPO_REGISTRO', 'MSC');
   
@@ -69,6 +74,7 @@ DECLARE
   OWNER_SA                           VARCHAR2(60);
   OWNER_T                            VARCHAR2(60);
   OWNER_DM                           VARCHAR2(60);
+  ESQUEMA_DM                          VARCHAR2(60);
   OWNER_MTDT                         VARCHAR2(60);
   NAME_DM                            VARCHAR(60);
   nombre_proceso                     VARCHAR(30);
@@ -78,6 +84,7 @@ DECLARE
   long_parte_decimal                 PLS_integer;
   mascara                            VARCHAR2(250);
   nombre_fich_cargado                VARCHAR2(1) := 'N';
+  entra_en_case                      PLS_integer := 0;
       
 
   function procesa_campo_formateo (cadena_in in varchar2, nombre_campo_in in varchar2) return varchar2
@@ -98,7 +105,7 @@ DECLARE
     cadena_resul:= cadena_in;
     if lon_cadena > 0 then
       /* Busco el nombre del campo = */
-      sustituto := ':' || nombre_campo_in;
+      sustituto := '@' || nombre_campo_in;
       loop
         dbms_output.put_line ('Entro en el LOOP de procesa_campo_formateo. La cadena es: ' || cadena_resul);
         pos := instr(cadena_resul, nombre_campo_in, pos+1);
@@ -111,7 +118,7 @@ DECLARE
         cola := substr(cadena_resul, pos + length (nombre_campo_in));
         dbms_output.put_line ('La cola es: ' || cola);
         cadena_resul := cabeza || sustituto || cola;
-        pos_ant := pos + (length (':' || nombre_campo_in));
+        pos_ant := pos + (length ('@' || nombre_campo_in));
         dbms_output.put_line ('La posicion anterior es: ' || pos_ant);
         pos := pos_ant;
       end loop;
@@ -128,6 +135,8 @@ BEGIN
   SELECT VALOR INTO OWNER_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_DM';
   SELECT VALOR INTO OWNER_MTDT FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_MTDT';
   SELECT VALOR INTO NAME_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'NAME_DM';
+  SELECT VALOR INTO ESQUEMA_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'ESQUEMA_DM';
+  
   SELECT VALOR INTO v_REQ_NUMER FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'REQ_NUMBER';
   /* (20141219) FIN*/
 
@@ -148,10 +157,10 @@ BEGIN
       nombre_proceso := reg_summary.CONCEPT_NAME;
     end if;
       
-    UTL_FILE.put_line(fich_salida, 'LOAD DATA');
+    UTL_FILE.put_line(fich_salida, 'LOAD DATA LOCAL');
     --UTL_FILE.put_line(fich_salida, 'INFILE ' || '_DIR_DATOS_/﻿_NOMBRE_INTERFACE___FCH_DATOS_');
     UTL_FILE.put_line(fich_salida, 'INFILE');
-    UTL_FILE.put_line(fich_salida, 'INTO TABLE ' || NAME_DM || '.SA_' || reg_summary.CONCEPT_NAME);
+    UTL_FILE.put_line(fich_salida, 'INTO TABLE ' || OWNER_SA || '.SA_' || reg_summary.CONCEPT_NAME);
     IF reg_summary.TYPE = 'S'             /*  El fichero posee un separador de campos */
     THEN
       UTL_FILE.put_line(fich_salida, 'FIELDS TERMINATED BY "' || reg_summary.SEPARATOR || '"');
@@ -160,6 +169,7 @@ BEGIN
       UTL_FILE.put_line(fich_salida, '(');
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
+      nombre_fich_cargado := 'N';
       LOOP
         FETCH dtd_interfaz_detail
         INTO reg_datail;
@@ -182,29 +192,47 @@ BEGIN
               else
                 tipo_col := reg_datail.COLUMNA;
               end if;
+            else
+              /* (20180418) Angel Ruiz. Se trata del campo FILE_NAME */
+              tipo_col := '@' || reg_datail.COLUMNA;
+              nombre_fich_cargado := 'Y';
             end if;
           end if;
         WHEN reg_datail.TYPE = 'NU' THEN
           if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') > 0 and reg_datail.NULABLE = 'N') then
             tipo_col := '@' || reg_datail.COLUMNA;
-          else            
-            tipo_col := reg_datail.COLUMNA;
+          else
+            if (reg_datail.NULABLE is null) then
+              tipo_col := '@' || reg_datail.COLUMNA;
+            else
+              tipo_col := reg_datail.COLUMNA;
+            end if;
           end if;
         WHEN reg_datail.TYPE = 'DE' THEN
           if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0 and reg_datail.NULABLE = 'N') then
             tipo_col := '@' || reg_datail.COLUMNA;
           else            
-            tipo_col := reg_datail.COLUMNA;
+            if (reg_datail.NULABLE is null) then
+              tipo_col := '@' || reg_datail.COLUMNA;
+            else
+              tipo_col := reg_datail.COLUMNA;
+            end if;
           end if;
         WHEN reg_datail.TYPE = 'FE' THEN
-          if (reg_datail.LENGTH = 14) then
+          if (reg_datail.LENGTH = '14') then
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
             if (reg_datail.NULABLE = 'N') then
               tipo_col := '@'|| reg_datail.COLUMNA;
             else
               tipo_col := reg_datail.COLUMNA;
-            end if;              
+            end if;
+          elsif (reg_datail.LENGTH = '20') then
+            if (reg_datail.NULABLE = 'N') then
+              tipo_col := '@'|| reg_datail.COLUMNA;
+            else
+              tipo_col := '@'|| reg_datail.COLUMNA;
+            end if;
           else
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
@@ -236,6 +264,7 @@ BEGIN
       UTL_FILE.put_line(fich_salida, 'SET');
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
+      entra_en_case := 0;
       LOOP
         FETCH dtd_interfaz_detail
         INTO reg_datail;
@@ -245,15 +274,20 @@ BEGIN
           if (reg_datail.format is not null) then
             /* Hay formateo de la columna */
             tipo_col := reg_datail.COLUMNA || '=' || procesa_campo_formateo (reg_datail.format, reg_datail.COLUMNA);
+            entra_en_case:=1;
           else
             if (reg_datail.COLUMNA = 'FILE_NAME') then
               tipo_col := 'FILE_NAME = ' || '"MY_FILE"';
+              entra_en_case:=1;
             elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N' and reg_datail.LENGTH>2) then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
-            elsif (reg_datail.NULABLE is null and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
+              entra_en_case:=1;
+            elsif (reg_datail.NULABLE = 'N' and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
-            elsif (reg_datail.NULABLE is null and reg_datail.LENGTH>11) then 
+              entra_en_case:=1;
+            elsif (reg_datail.NULABLE = 'N' and reg_datail.LENGTH>11) then 
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NO INFORMADO'', @' || reg_datail.COLUMNA || ')';
+              entra_en_case:=1;
             end if;
           end if;
         WHEN reg_datail.TYPE = 'NU' THEN
@@ -261,25 +295,48 @@ BEGIN
           /* Si el campo es COD_* entonces voy a ponerle un control para que si viene un NULL introduzca un valor -3 (NI#) */
           if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') > 0  and reg_datail.NULABLE = 'N') then
             tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', -3, @' ||reg_datail.COLUMNA || ')';
+            entra_en_case:=1;
+          else
+            if (reg_datail.NULABLE is null) then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', NULL, @' ||reg_datail.COLUMNA || ')';
+              entra_en_case:=1;
+            end if;
           end if;
         WHEN reg_datail.TYPE = 'DE' THEN
           /* (20160209) Angel Ruiz */
           /* si el campo es COD_* entonces voy a ponerle un control para que si viene un NULL introduzca un valor -3 (NI#) */
           if (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N') then
             tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', -3, @' ||reg_datail.COLUMNA || ')';
+            entra_en_case:=1;
+          else
+            if (reg_datail.NULABLE is null) then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', NULL, @' ||reg_datail.COLUMNA || ')';
+              entra_en_case:=1;
+            end if;
           end if;
         WHEN reg_datail.TYPE = 'FE' THEN
-          if (reg_datail.LENGTH = 14) then
+          if (reg_datail.LENGTH = '14') then
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
             if (reg_datail.NULABLE = 'N') then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', @' || reg_datail.COLUMNA || ')';
+              entra_en_case:=1;
+            end if;              
+          elsif (reg_datail.LENGTH = '20') then
+          /* (20180417) Angel Ruiz. Otro formato de Fecha  '%d/%m/%Y, %H:%i:%s'*/
+            if (reg_datail.NULABLE = 'N') then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', str_to_date(@' || reg_datail.COLUMNA || ', ''%d/%m/%Y, %H:%i:%s''))';
+              entra_en_case:=1;
+            else
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', str_to_date(@' || reg_datail.COLUMNA || ', ''%d/%m/%Y, %H:%i:%s''))';
+              entra_en_case:=1;
             end if;              
           else
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
             if (reg_datail.NULABLE = 'N' ) then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101'', @' || reg_datail.COLUMNA || ')';
+              entra_en_case:=1;
             end if;
           end if;
         WHEN reg_datail.TYPE = 'IM' THEN
@@ -311,17 +368,25 @@ BEGIN
           end loop;
           tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ') REGEXP ''^[0-9.]+[[.,.]][0-9]+$'', replace(replace(@' || reg_datail.COLUMNA || ', ''.'', ''''), '','', ''.''), replace(@' || reg_datail.COLUMNA || ', '','', ''))';
           dbms_output.put_line('Tipo de columna: ' || tipo_col);
+          entra_en_case:=1;
         WHEN reg_datail.TYPE = 'TI' THEN
           if (reg_datail.NULABLE = 'N') then
             tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''000000'', @' || reg_datail.COLUMNA || ')';
+            entra_en_case:=1;
           end if;
         END CASE;
         IF primera_col = 1
         THEN
-          UTL_FILE.put_line(fich_salida, tipo_col);
-          primera_col := 0;
+          if entra_en_case=1 then
+            UTL_FILE.put_line(fich_salida, tipo_col);
+            primera_col := 0;
+            entra_en_case := 0;
+          end if;
         ELSE
-          UTL_FILE.put_line(fich_salida, ', ' || tipo_col); 
+          if entra_en_case=1 then
+            UTL_FILE.put_line(fich_salida, ', ' || tipo_col);
+            entra_en_case := 0;
+          end if;
         END IF;
       END LOOP;
       CLOSE dtd_interfaz_detail;
@@ -336,6 +401,7 @@ BEGIN
       OPEN dtd_interfaz_detail (reg_summary.CONCEPT_NAME, reg_summary.SOURCE);
       primera_col := 1;
       num_column := 0;
+      nombre_fich_cargado := 'N';
       LOOP
         FETCH dtd_interfaz_detail
         INTO reg_datail;
@@ -349,6 +415,7 @@ BEGIN
           else
             if (reg_datail.COLUMNA = 'FILE_NAME') then
               tipo_col := 'FILE_NAME = ' || '"MY_FILE"';
+              nombre_fich_cargado := 'Y';
             elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N' and reg_datail.LENGTH>2) then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NI#'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
             elsif (reg_datail.NULABLE = 'N' and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
@@ -356,7 +423,7 @@ BEGIN
             elsif (reg_datail.NULABLE = 'N' and reg_datail.LENGTH>11) then 
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))='''', ''NO INFORMADO'', ' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
             else
-              tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || '))';
+              tipo_col := reg_datail.COLUMNA || '=' || 'substr(@linea, ' || reg_datail.POSITION || ', ' || reg_datail.LENGTH || ')';
             end if;
           end if;
         WHEN reg_datail.TYPE = 'NU' THEN
@@ -423,6 +490,12 @@ BEGIN
       pos_fin_pais := pos_ini_pais + length ('_XXX_');
       nombre_interface_a_cargar := substr(nombre_interface_a_cargar, 1, pos_ini_pais -1) || '_' || reg_summary.COUNTRY || '_' || substr(nombre_interface_a_cargar, pos_fin_pais);
     end if;
+    pos_ini_pais := regexp_instr(reg_summary.INTERFACE_NAME, '^XXX_');
+    if (pos_ini_pais > 0) then
+      pos_fin_pais := pos_ini_pais + length ('XXX_');
+      nombre_interface_a_cargar := reg_summary.COUNTRY || '_' || substr(nombre_interface_a_cargar, pos_fin_pais);
+    end if;
+    
     pos_ini_fecha := instr(reg_summary.INTERFACE_NAME, '_YYYYMMDD');
     if (pos_ini_fecha > 0) then
       pos_fin_fecha := pos_ini_fecha + length ('_YYYYMMDD');
@@ -434,12 +507,17 @@ BEGIN
       pos_fin_hora := pos_ini_hora + length ('HH24MISS');
       nombre_interface_a_cargar := substr(nombre_interface_a_cargar, 1, pos_ini_hora -1) || '*' || substr(nombre_interface_a_cargar, pos_fin_hora);
     end if;
+    pos_ini_hora := instr(nombre_interface_a_cargar, 'HHMMSS');
+    if (pos_ini_hora > 0) then
+      pos_fin_hora := pos_ini_hora + length ('HHMMSS');
+      nombre_interface_a_cargar := substr(nombre_interface_a_cargar, 1, pos_ini_hora -1) || '*' || substr(nombre_interface_a_cargar, pos_fin_hora);
+    end if;
     /*****************************/
     nombre_flag_a_cargar := substr (nombre_interface_a_cargar, 1, instr(nombre_interface_a_cargar, '.')) || 'flag';
     UTL_FILE.put_line(fich_salida_sh, '#!/bin/bash');
     UTL_FILE.put_line(fich_salida_sh, '#############################################################################');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
-    UTL_FILE.put_line(fich_salida_sh, '# Telefonica Moviles Mexico SA DE CV                                        #');
+    UTL_FILE.put_line(fich_salida_sh, '# ' || NAME_DM || '                                                             #');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
     UTL_FILE.put_line(fich_salida_sh, '# Archivo    :       load_SA_' ||  reg_summary.CONCEPT_NAME || '.sh                            #');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
@@ -449,7 +527,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
     UTL_FILE.put_line(fich_salida_sh, '# Ejecucion  :                                                              #');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
-    UTL_FILE.put_line(fich_salida_sh, '# Historia : 31-Octubre-2014 -> Creacion                                    #');
+    UTL_FILE.put_line(fich_salida_sh, '# Historia : 22-MAYO-2018 -> Creacion                                    #');
     UTL_FILE.put_line(fich_salida_sh, '# Caja de Control - M :                                                     #');
     UTL_FILE.put_line(fich_salida_sh, '#                                                                           #');
     UTL_FILE.put_line(fich_salida_sh, '# Observaciones: En caso de reproceso colocar la fecha deseada              #');
@@ -528,15 +606,16 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, 'echo "Fecha de Datos: ${FCH_DATOS}"  >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ');
     UTL_FILE.put_line(fich_salida_sh, 'echo "Forzado: ${BAN_FORZADO}"  >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ');
     --UTL_FILE.put_line(fich_salida_sh, 'set -x');
-    UTL_FILE.put_line(fich_salida_sh, '#Permite los acentos y U');
-    UTL_FILE.put_line(fich_salida_sh, 'NLS_LANG=AMERICAN_AMERICA.WE8ISO8859P1');
-    UTL_FILE.put_line(fich_salida_sh, 'export NLS_LANG');
+    --UTL_FILE.put_line(fich_salida_sh, '#Permite los acentos y U');
+    --UTL_FILE.put_line(fich_salida_sh, 'NLS_LANG=AMERICAN_AMERICA.WE8ISO8859P1');
+    --UTL_FILE.put_line(fich_salida_sh, 'export NLS_LANG');
     UTL_FILE.put_line(fich_salida_sh, '################################################################################');
     UTL_FILE.put_line(fich_salida_sh, '# VARIABLES ESPECIFICAS PARA EL PROCESO                                        #');
     UTL_FILE.put_line(fich_salida_sh, '################################################################################');
     UTL_FILE.put_line(fich_salida_sh, 'REQ_NUM="' || v_REQ_NUMER || '"');
     --UTL_FILE.put_line(fich_salida_sh, 'REQ_NUM="Req89208"');
-    UTL_FILE.put_line(fich_salida_sh, 'INTERFAZ=' || v_REQ_NUMER || '_load_SA_' || reg_summary.CONCEPT_NAME);
+    --UTL_FILE.put_line(fich_salida_sh, 'INTERFAZ=' || v_REQ_NUMER || '_load_SA_' || reg_summary.CONCEPT_NAME);
+    UTL_FILE.put_line(fich_salida_sh, 'INTERFAZ=' || 'load_SA_' || reg_summary.CONCEPT_NAME || '.sh');
     --UTL_FILE.put_line(fich_salida_sh, 'INTERFAZ=Req89208_load_SA_' || reg_summary.CONCEPT_NAME);
     
     --UTL_FILE.put_line(fich_salida_sh, 'if [ "`/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}''`" = "10.225.173.102" ]||[ "`/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}''`" = "10.225.173.184" ]; then');
@@ -566,7 +645,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '################################################################################');
     UTL_FILE.put_line(fich_salida_sh, '# Cuentas  Produccion / Desarrollo                                             #');
     UTL_FILE.put_line(fich_salida_sh, '################################################################################');
-    UTL_FILE.put_line(fich_salida_sh, 'if [ "`/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}''`" = "10.225.173.102" ]||[ "`/sbin/ifconfig -a | grep ''10.225.173.'' | awk ''{print $2}''`" = "10.225.173.184" ]; then');
+    UTL_FILE.put_line(fich_salida_sh, 'if [ "`/sbin/ifconfig -a | grep ''192.168.2.'' | awk ''{print $2}''`" = "192.168.2.109" ]||[ "`/sbin/ifconfig -a | grep ''192.168.2.'' | awk ''{print $2}''`" = "192.168.2.109" ]; then');
     UTL_FILE.put_line(fich_salida_sh, '  ### Cuentas para mantenimiento');
     UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL_USUARIOS=`cat ${' || NAME_DM || '_CONFIGURACION}/Correos_Mtto_Usuario_ReportesBI.txt`');
     UTL_FILE.put_line(fich_salida_sh, '  CTA_MAIL=`cat ${' || NAME_DM || '_CONFIGURACION}/Correos_Mtto_ReportesBI.txt`');
@@ -588,14 +667,14 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '');
     UTL_FILE.put_line(fich_salida_sh, 'ObtenContrasena ${BD_SID} ${BD_USUARIO}');
     UTL_FILE.put_line(fich_salida_sh, 'BD_CLAVE=${PASSWORD}');
-    UTL_FILE.put_line(fich_salida_sh, 'ULT_PASO_EJECUTADO=`mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} 2> /dev/null << EOF');
+    UTL_FILE.put_line(fich_salida_sh, 'ULT_PASO_EJECUTADO=`mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} 2> /dev/null << EOF');
     UTL_FILE.put_line(fich_salida_sh, '  SELECT if(MAX(MTDT_MONITOREO.CVE_PASO) IS NULL, 0, MAX(MTDT_MONITOREO.CVE_PASO))');
     UTL_FILE.put_line(fich_salida_sh, '  FROM');
-    UTL_FILE.put_line(fich_salida_sh, '  ' || NAME_DM || '.MTDT_MONITOREO, ' || NAME_DM || '.MTDT_PROCESO, ' || NAME_DM || '.MTDT_PASO');
+    UTL_FILE.put_line(fich_salida_sh, '  ' || OWNER_MTDT || '.MTDT_MONITOREO, ' || OWNER_MTDT || '.MTDT_PROCESO, ' || OWNER_MTDT || '.MTDT_PASO');
     UTL_FILE.put_line(fich_salida_sh, '  WHERE');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_MONITOREO.FCH_CARGA = str_to_date(''${FCH_CARGA}'', ''%Y%m%d'') AND');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_MONITOREO.FCH_DATOS = str_to_date(''${FCH_DATOS}'', ''%Y%m%d'') AND');
-    UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_PROCESO.NOMBRE_PROCESO = ''${0}'' AND');
+    UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_PROCESO.NOMBRE_PROCESO = ''${INTERFAZ}'' AND');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_PROCESO.CVE_PROCESO = ' || 'MTDT_MONITOREO.CVE_PROCESO AND');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_PROCESO.CVE_PROCESO = '  || 'MTDT_PASO.CVE_PROCESO AND');
     UTL_FILE.put_line(fich_salida_sh, '  ' || 'MTDT_PASO.CVE_PASO = ' || 'MTDT_MONITOREO.CVE_PASO AND');
@@ -611,7 +690,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '  exit 0');
     UTL_FILE.put_line(fich_salida_sh, 'fi');
     UTL_FILE.put_line(fich_salida_sh, '');
-    UTL_FILE.put_line(fich_salida_sh, 'INICIO_PASO_TMR=`mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} 2> /dev/null << EOF');
+    UTL_FILE.put_line(fich_salida_sh, 'INICIO_PASO_TMR=`mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} 2> /dev/null << EOF');
     UTL_FILE.put_line(fich_salida_sh, 'SELECT date_format(current_timestamp(), ''%Y%m%d%k%i%s'');');
     UTL_FILE.put_line(fich_salida_sh, 'QUIT');
     UTL_FILE.put_line(fich_salida_sh, 'EOF`');
@@ -624,9 +703,9 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '# Llamada al proceso previo al loader para el truncado de la tabla de STAGIN');
     UTL_FILE.put_line(fich_salida_sh, '');
     UTL_FILE.put_line(fich_salida_sh, '# Llamada a sql_plus');
-    UTL_FILE.put_line(fich_salida_sh, 'mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} << EOF >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ' ||  '2>&' || '1');
+    UTL_FILE.put_line(fich_salida_sh, 'mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} << EOF >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ' ||  '2>&' || '1');
     UTL_FILE.put_line(fich_salida_sh, '');
-    UTL_FILE.put_line(fich_salida_sh, '  ' || 'call ' || NAME_DM || '.' || 'pre_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');
+    UTL_FILE.put_line(fich_salida_sh, '  ' || 'call ' || ESQUEMA_DM || '.' || 'pre_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');
     UTL_FILE.put_line(fich_salida_sh, 'quit');
     UTL_FILE.put_line(fich_salida_sh, 'EOF');
     UTL_FILE.put_line(fich_salida_sh, '');
@@ -672,8 +751,9 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, 'else');
     UTL_FILE.put_line(fich_salida_sh, '  for FILE in ${NOMBRE_FICH_CARGA}');
     UTL_FILE.put_line(fich_salida_sh, '  do');
-    UTL_FILE.put_line(fich_salida_sh, '    NAME_FLAG=`echo $FILE | sed -e ''s/\.[Dd][Aa][Tt]/\.flag/''`');
-    UTL_FILE.put_line(fich_salida_sh, '    if [ ! -f ${FILE} ] || [ ! -f ${NAME_FLAG} ] ; then');    
+    --UTL_FILE.put_line(fich_salida_sh, '    NAME_FLAG=`echo $FILE | sed -e ''s/\.[Dd][Aa][Tt]/\.flag/''`');
+    --UTL_FILE.put_line(fich_salida_sh, '    if [ ! -f ${FILE} ] || [ ! -f ${NAME_FLAG} ] ; then');    
+    UTL_FILE.put_line(fich_salida_sh, '    if [ ! -f ${FILE} ] ; then');    
     UTL_FILE.put_line(fich_salida_sh, '      SUBJECT="${INTERFAZ}: No existe fichero o su fichero de flag a cargar. ' || '${FILE}' || '."');
     UTL_FILE.put_line(fich_salida_sh, '      ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
     UTL_FILE.put_line(fich_salida_sh, '      echo ${SUBJECT} >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log');    
@@ -696,14 +776,16 @@ BEGIN
       --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`basename ${FILE%.*}`.ctl');
       UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/\.ctl/''`');
       UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS_T=`echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/_/''`');
-      --UTL_FILE.put_line(fich_salida_sh, '  cat ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl | sed "s/MY_FILE/${NOMBRE_FICH_DATOS}/g" > ' || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
+      UTL_FILE.put_line(fich_salida_sh, '  cat ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl | sed "s/MY_FILE/${NOMBRE_FICH_DATOS}/g" > ' || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       --UTL_FILE.put_line(fich_salida_sh, '  sed -e ''s/MY_FILE/${NOMBRE_FICH_DATOS}/'' -e ''s/_DIR_DATOS_/${MVNO_FUENTE}\/${FCH_CARGA}/'' -e ''s/_NOMBRE_INTERFACE_/${NOMBRE_FICH_DATOS}/'' -e ''s/_FCH_DATOS_/${FCH_DATOS}/'' ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  awk ''');
       UTL_FILE.put_line(fich_salida_sh, '  $0 ~ /^INFILE/ {printf "%s \"%s\"\n",$0, parametro; }');
       UTL_FILE.put_line(fich_salida_sh, '  $0 !~ /^INFILE/ {print $0; }');
-      UTL_FILE.put_line(fich_salida_sh, '  '' parametro="${FILE}" ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
+      --UTL_FILE.put_line(fich_salida_sh, '  '' parametro="${FILE}" ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
+      UTL_FILE.put_line(fich_salida_sh, '  '' parametro="${FILE}" ${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}_tmp');
+      UTL_FILE.put_line(fich_salida_sh, '  mv ${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}_tmp ${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  # Llamada a LOADER');
-      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
+      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
       UTL_FILE.put_line(fich_salida_sh, '');
       UTL_FILE.put_line(fich_salida_sh, '  err_salida=$?');
       UTL_FILE.put_line(fich_salida_sh, '');
@@ -713,7 +795,7 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, '    echo ${SUBJECT} >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log');    
       UTL_FILE.put_line(fich_salida_sh, '    echo `date` >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log');
       UTL_FILE.put_line(fich_salida_sh, '    #Borramos el fichero ctl generado en vuelo.');
-      UTL_FILE.put_line(fich_salida_sh, '    rm ${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
+      UTL_FILE.put_line(fich_salida_sh, '    rm ${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '    InsertaFinFallido');
       UTL_FILE.put_line(fich_salida_sh, '    exit 1');    
       UTL_FILE.put_line(fich_salida_sh, '  fi');    
@@ -748,7 +830,7 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, '  $0 !~ /^INFILE/ {print $0; }');
       UTL_FILE.put_line(fich_salida_sh, '  '' parametro="${FILE}" ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  # Llamada a LOADER');
-      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
+      UTL_FILE.put_line(fich_salida_sh, '  mysql -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} -v -v -v < ${'|| NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL} > ' || '${' || NAME_DM || '_TRAZAS}/' || 'ctl_SA' || '_' || reg_summary.CONCEPT_NAME || '_${NOMBRE_FICH_DATOS_T}${FECHA_HORA}' || '.log ' || '2>&' || '1'); 
       UTL_FILE.put_line(fich_salida_sh, '');
       UTL_FILE.put_line(fich_salida_sh, '  err_salida=$?');
       UTL_FILE.put_line(fich_salida_sh, '');
@@ -781,9 +863,9 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, '# Llevamos a cabo el paso a historico');
       UTL_FILE.put_line(fich_salida_sh, '');
       UTL_FILE.put_line(fich_salida_sh, '# Llamada a sql_plus');
-      UTL_FILE.put_line(fich_salida_sh, '  mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} << EOF >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ' ||  '2>&' || '1');
+      UTL_FILE.put_line(fich_salida_sh, '  mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} << EOF >> ${' || NAME_DM || '_TRAZAS}/load_SA_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}' || '.log ' ||  '2>&' || '1');
       UTL_FILE.put_line(fich_salida_sh, '');
-      UTL_FILE.put_line(fich_salida_sh, '  ' || 'call' || 'pos_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');      
+      UTL_FILE.put_line(fich_salida_sh, '  ' || 'call ' || 'pos_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');      
       UTL_FILE.put_line(fich_salida_sh, 'quit');
       UTL_FILE.put_line(fich_salida_sh, 'EOF');
       UTL_FILE.put_line(fich_salida_sh, '');
@@ -820,7 +902,7 @@ BEGIN
     --UTL_FILE.put_line(fich_salida_sh, 'mv ${NOMBRE_FICH_CARGA}' || ' ${' || NAME_DM || '_DESTINO}/${FCH_CARGA} >> ${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log ' || '2>&' || '1');    
     UTL_FILE.put_line(fich_salida_sh, 'mv ${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_interface_a_cargar || ' ${' || NAME_DM || '_DESTINO}/${FCH_CARGA} >> ${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log ' || '2>&' || '1');    
     --UTL_FILE.put_line(fich_salida_sh, 'mv ${NOMBRE_FICH_FLAG}' || ' ${' || NAME_DM || '_DESTINO}/${FCH_CARGA} >> ${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log ' || '2>&' || '1');    
-    UTL_FILE.put_line(fich_salida_sh, 'mv ${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_flag_a_cargar || ' ${' || NAME_DM || '_DESTINO}/${FCH_CARGA} >> ${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log ' || '2>&' || '1');    
+    --UTL_FILE.put_line(fich_salida_sh, 'mv ${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_flag_a_cargar || ' ${' || NAME_DM || '_DESTINO}/${FCH_CARGA} >> ${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log ' || '2>&' || '1');    
     UTL_FILE.put_line(fich_salida_sh, 'exit 0');    
     /******/
     /* FIN DE LA GENERACION DEL sh de CARGA */
