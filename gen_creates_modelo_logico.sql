@@ -31,7 +31,8 @@ DECLARE
       TRIM(VDEFAULT) "VDEFAULT"
     FROM MTDT_MODELO_DETAIL
     WHERE
-      TABLE_NAME = table_name_in;
+      TABLE_NAME = table_name_in
+    ORDER BY POSITION;
   /* (20150907) Angel Ruiz . FIN NF: Se crea una tabla de metadato MTDT_MODELO_SUMMARY y otra MTDT_MODELO_DETAIL */
 
   r_mtdt_modelo_logico_TABLA                                          c_mtdt_modelo_logico_TABLA%rowtype;
@@ -43,7 +44,7 @@ DECLARE
   longitud_campo INTEGER;
   clave_foranea INTEGER;  /* 0 Si la tabla no tiene clave foranea. 1 si la tiene  */
   primera_col INTEGER;
-  cadena_values VARCHAR2(500);
+  cadena_values VARCHAR2(1000);
   concept_name VARCHAR2 (30);
   nombre_tabla_reducido VARCHAR2(30);
   v_nombre_particion VARCHAR2(30);
@@ -88,7 +89,8 @@ BEGIN
       FETCH c_mtdt_modelo_logico_TABLA
       INTO r_mtdt_modelo_logico_TABLA;
       EXIT WHEN c_mtdt_modelo_logico_TABLA%NOTFOUND;
-      nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
+      --nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 5); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
+      nombre_tabla_reducido := substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, instr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, '_')+1); /* Le quito al nombre de la tabla los caracteres DMD_ o DMF_ */
       v_CVE_DIA_es_col:=0;
       v_CVE_MES_es_col:=0;
       DBMS_OUTPUT.put_line('CREATE TABLE ' || NAME_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
@@ -264,14 +266,16 @@ BEGIN
           lista_pk(lista_pk.LAST) := r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
         END IF;
         /* (20150821) ANGEL RUIZ. FUNCIONALIDAD PARA PARTICIONADO */
-        if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4), '??F_',1,'i') >0 AND 
+        --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4), '??F_',1,'i') >0 AND 
+        if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND 
         upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_DIA') then 
           /* SE TRATA DE UNA TABLA DE HECHOS CON COLUMNA CVE_DIA ==> PARTICIONADO DIARIO */
           v_tipo_particionado := 'D';   /* Particionado Diario */
           v_CVE_DIA_es_col := 1;
         end if;
         /* Gestionamos el posible particionado de la tabla */
-        if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4) ,'??F_',1,'i') >0 AND
+        --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4) ,'??F_',1,'i') >0 AND
+        if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND
         upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_MES') then 
           /* SE TRATA DE UNA TABLA DE HECHOS CON COLUMNA CVE_MES ==> PARTICIONADO MENSUAL */
           if (r_mtdt_modelo_logico_TABLA.PARTICIONADO = 'M24') then
@@ -283,7 +287,8 @@ BEGIN
           end if;
           v_CVE_MES_es_col := 1;
         end if;
-        if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4), '??A_',1,'i') >0 AND
+        --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4), '??A_',1,'i') >0 AND
+        if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+A_',1,'i') >0) AND
         upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_MES') then
           /* SE TRATA DE UNA TABLA DE AGREGADOS CON PARTICIONAMIENTO POR MES */
           v_tipo_particionado := 'M';   /* Particionado Mensual, aunque para una tabla de Agregados*/
@@ -339,7 +344,8 @@ BEGIN
       END IF;
       DBMS_OUTPUT.put_line(')');  /* Parentesis final del create*/
       --DBMS_OUTPUT.put_line('TABLESPACE ' || r_mtdt_modelo_logico_COLUMNA.TABLESPACE);
-      if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4) ,'??F_',1,'i') >0)  then  /* Se trata de una tabla de HECHOS  */
+      --if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4) ,'??F_',1,'i') >0)  then  /* Se trata de una tabla de HECHOS  */
+      if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0))  then  /* Se trata de una tabla de HECHOS  */
         --  /* Hay que particonarla */
         if (r_mtdt_modelo_logico_TABLA.TABLESPACE is not null) then
           DBMS_OUTPUT.put_line('TABLESPACE ' || r_mtdt_modelo_logico_TABLA.TABLESPACE);
@@ -834,8 +840,10 @@ BEGIN
       
       if (r_mtdt_modelo_logico_TABLA.CI = 'N' or r_mtdt_modelo_logico_TABLA.CI = 'I') then
         /* Generamos los inserts para aquellas tablas que no son de carga inicial */
-        if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4) ,'??D_',1,'i') >0 or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4), 'DMT_',1,'i') >0 
-        or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4), 'DWD_',1,'i') >0) then
+        --if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4) ,'??D_',1,'i') >0 or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4), 'DMT_',1,'i') >0 
+        --or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, 4), 'DWD_',1,'i') >0) then
+        if (regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')) ,'^?+D_',1,'i') >0 or regexp_count(substr(r_mtdt_modelo_logico_TABLA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+T_',1,'i') >0 
+        ) then
           DBMS_OUTPUT.put_line('');        
           /* Primero el INSERT "NO APLICA" */
           --DBMS_OUTPUT.put_line('INSERT INTO ' || OWNER_DM || '.' || r_mtdt_modelo_logico_TABLA.TABLE_NAME);
@@ -1315,5 +1323,6 @@ BEGIN
   END IF;
   --DBMS_OUTPUT.put_line('set echo off;');
   --DBMS_OUTPUT.put_line('exit SUCCESS;');
+  DBMS_OUTPUT.put_line('quit');
 END;
 
