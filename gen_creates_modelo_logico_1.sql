@@ -317,7 +317,7 @@ BEGIN
           else
           /* La tabla esta particionada */
             if v_tipo_particionado = 'D' then
-              if lista_pk (indx) = 'CVE_DIA' or lista_pk (indx) = 'CVE_DAY' then
+              if lista_pk (indx) = 'CVE_DIA' or lista_pk (indx) = 'CVE_DAY' or lista_pk (indx) = 'DAY' then
                 v_campo_parti_en_pk := 1;
               end if;
             else
@@ -632,7 +632,7 @@ BEGIN
                       DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                     end if;
                   else
-                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES') then
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY') then
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
@@ -670,7 +670,7 @@ BEGIN
                       DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
                     end if;
                   else
-                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES') then
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY') then
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
@@ -711,7 +711,7 @@ BEGIN
                       DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
                     end if;
                   else
-                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES') then                
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY') then                
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
@@ -749,7 +749,7 @@ BEGIN
                       DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
                     end if;
                   else
-                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES') then                
+                    if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY') then                
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                         DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
@@ -803,7 +803,7 @@ BEGIN
             else
             /* La tabla esta particionada */
               if v_tipo_particionado = 'D' then
-                if lista_pk (indx) = 'CVE_DIA' or lista_pk (indx) = 'CVE_DAY' then
+                if lista_pk (indx) = 'CVE_DIA' or lista_pk (indx) = 'CVE_DAY' or lista_pk (indx) = 'DAY' then
                   v_campo_parti_en_pk := 1;
                 end if;
               else
