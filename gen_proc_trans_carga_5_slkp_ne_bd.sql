@@ -18,7 +18,7 @@ SELECT
     trim(MTDT_TC_SCENARIO.TABLE_NAME) in 
     (
     --'CMBF_SURVEY_USERS', 'CMBF_SURVEY_USERS_DETAIL', 'CMBF_USERS_COURSES', 'CMBF_USERS_COURSES_DETAIL', 'CMBF_EVENTS'
-    'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST', 'KRC_PRODUCT_AVAIL'
+    'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST', 'KRC_PRODUCT_AVAIL', 'KRF_OFFER_COMP'
     );
     --('NGA_PARQUE_SVA_MES');
     
@@ -3652,7 +3652,7 @@ begin
           /* (20200117) ANGEL RUIZ. Para el tema del escenario I en caso de que haya un INVENTARIO o RE-INVENTARIO */
           /* Es codigo Ad-hoc por lo tanto inservible*/
           if (upper(reg_scenario.SCENARIO) = 'I') then
-            v_TABLE_BASE_NAME_SCENARIO_I := reg_scenario.TABLE_BASE_NAME;
+            v_TABLE_BASE_NAME_SCENARIO_I := procesa_campo_filter(reg_scenario.TABLE_BASE_NAME);
             v_TABLE_NAME_SCENARIO_I := reg_scenario.TABLE_NAME;
           end if;
           /* (20200117) FIN ANGEL RUIZ. Para el tema del escenario I en caso de que haya un INVENTARIO o RE-INVENTARIO */
