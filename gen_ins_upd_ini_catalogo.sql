@@ -206,7 +206,7 @@ BEGIN
       /* ESTAMOS EN LA ACTUALIZACION POSTERIORES DE LOS CATALOGOS */
       /* GENERAREMOS LOS UPDATES  */
       /* Los updates los vamos a implementar con un DELETE seguido de un INSERT */
-      DBMS_OUTPUT.put_line('delete ' || ESQUEMA_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' WHERE ' || 'CVE_' || reg_per_val.ITEM_NAME || ' = ' || reg_per_val.CVE || ';');
+      DBMS_OUTPUT.put_line('delete from ' || ESQUEMA_DM || '.' || PREFIJO_DM || 'D_' || reg_per_val.ITEM_NAME || ' WHERE ' || 'CVE_' || reg_per_val.ITEM_NAME || ' = ' || reg_per_val.CVE || ';');
       /* Generamos el insert que casi una copia identica de la insercion que hacemos la primera vez */
       /* Solo cambia el campo FCH_MODIFICACION */
       IF (regexp_count(reg_per_val.AGREGATION,'^CVE_',1,'i') >0)

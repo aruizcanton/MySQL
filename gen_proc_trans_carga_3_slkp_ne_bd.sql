@@ -19,8 +19,9 @@ SELECT
     (
     --'CMBF_SURVEY_USERS', 'CMBF_SURVEY_USERS_DETAIL', 'CMBF_USERS_COURSES', 'CMBF_USERS_COURSES_DETAIL', 'CMBF_EVENTS'
     'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST'
+    , 'KRF_OFFER_COMP', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_AVAIL_HIST', 'KRF_OFFER_COMP_HIST'
+    , 'KRF_WEEK_SALES'
     );
-    --('NGA_PARQUE_SVA_MES');
     
   cursor MTDT_SCENARIO (table_name_in IN VARCHAR2)
   is
@@ -39,7 +40,8 @@ SELECT
     FROM 
       MTDT_TC_SCENARIO
     WHERE
-      TRIM(TABLE_NAME) = table_name_in;
+      TRIM(TABLE_NAME) = table_name_in
+    ORDER BY SCENARIO ASC;
   
   CURSOR MTDT_TC_DETAIL (table_name_in IN VARCHAR2, scenario_in IN VARCHAR2)
   IS
@@ -157,6 +159,7 @@ SELECT
   OWNER_TC                              VARCHAR2(60);
   PREFIJO_DM                            VARCHAR2(60);
   ESQUEMA_DM  VARCHAR2(60);
+  VAR_REGS_MEDIA                        VARCHAR2(60);
   v_contador                        PLS_INTEGER:=0;
   v_REQ_NUMER         MTDT_VAR_ENTORNO.VALOR%TYPE;
   l_FROM                                      lista_tablas_from := lista_tablas_from();
@@ -1262,6 +1265,7 @@ SELECT
         --end loop;
         cadena_resul := regexp_replace(cadena_resul, '#VAR_MARGEN_COMISION#', ' 0.3 ');
         cadena_resul := regexp_replace(cadena_resul, '#VAR_FIN_DEFAULT#', ' ''9999-12-31'' ');
+        cadena_resul := regexp_replace(cadena_resul, '#VAR_REGS_MEDIA#', VAR_REGS_MEDIA);
         /* (20170925) Angel Ruiz. NF. Aparece la varieble #VAR_PCT_COMISIONES#*/
         if (INSTR(cadena_resul, '#VAR_PCT_COMISIONES#') > 0) then 
           v_VAR_PCT_COMISIONES := true;
@@ -3227,7 +3231,7 @@ begin
   SELECT VALOR INTO OWNER_TC FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'OWNER_TC';  
   SELECT VALOR INTO PREFIJO_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'PREFIJO_DM';
   SELECT VALOR INTO ESQUEMA_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'ESQUEMA_DM';
-  
+  SELECT VALOR INTO VAR_REGS_MEDIA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'VAR_REGS_MEDIA';
   --SELECT VALOR INTO v_MULTIPLICADOR_PROC FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'MULTIPLICADOR_PROC';
   
   /* (20141223) FIN*/

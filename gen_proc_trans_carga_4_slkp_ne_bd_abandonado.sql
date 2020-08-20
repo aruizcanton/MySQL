@@ -18,16 +18,9 @@ SELECT
     trim(MTDT_TC_SCENARIO.TABLE_NAME) in 
     (
     --'CMBF_SURVEY_USERS', 'CMBF_SURVEY_USERS_DETAIL', 'CMBF_USERS_COURSES', 'CMBF_USERS_COURSES_DETAIL', 'CMBF_EVENTS'
-    --'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST'
-    --, 'KRF_OFFER_COMP', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_AVAIL_HIST', 'KRF_OFFER_COMP_HIST'
-    --, 'KRF_WEEK_SALES'
-    --'KRF_TRANSACTIONS', 'KRF_TRANSACTIONS_HIST'
-    --'DWF_SUBSCRIBER', 'DWF_TOPUP'
-    --, 'DWF_TRAFV_TA', 'DWF_TRAFE_TA'
-    --, 'DWF_TRAFD_TA'
-    'DWF_SUBSCRIBERS', 'DWF_TRAFD_TA', 'DWF_TRAFV_TA', 'DWF_TRAFE_TA', 'DWF_TOPUP','DWF_TRANSAC_SUBSCRIBER'
-    --'DWF_TRANSAC_SUBSCRIBER'
+    'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST', 'KRC_PRODUCT_AVAIL'
     );
+    --('NGA_PARQUE_SVA_MES');
     
   cursor MTDT_SCENARIO (table_name_in IN VARCHAR2)
   is
@@ -46,8 +39,7 @@ SELECT
     FROM 
       MTDT_TC_SCENARIO
     WHERE
-      TRIM(TABLE_NAME) = table_name_in
-    ORDER BY SCENARIO ASC;
+      TRIM(TABLE_NAME) = table_name_in;
   
   CURSOR MTDT_TC_DETAIL (table_name_in IN VARCHAR2, scenario_in IN VARCHAR2)
   IS
@@ -128,7 +120,7 @@ SELECT
   reg_detail MTDT_TC_DETAIL%rowtype;
   reg_lookup MTDT_TC_LOOKUP%rowtype;
   reg_function MTDT_TC_FUNCTION%rowtype;
-  r_mtdt_modelo_logico_COLUMNA c_mtdt_modelo_logico_COLUMNA%rowtype;
+  reg_modelo_logico_col c_mtdt_modelo_logico_COLUMNA%rowtype;
 
   
   type list_columns_primary  is table of varchar(30);
@@ -183,6 +175,7 @@ SELECT
   v_existen_retrasados              VARCHAR2(1) := 'N';
   v_numero_indices                  PLS_INTEGER:=0;
   v_MULTIPLICADOR_PROC                   VARCHAR2(60);
+  v_tipo_particionado               VARCHAR2(10);
   v_alias                           VARCHAR2(40);
   v_hay_regla_seq                   BOOLEAN:=false; /*(20170107) Angel Ruiz. NF: reglas SEQ */
   v_nombre_seq                      VARCHAR2(50); /*(20170107) Angel Ruiz. NF: reglas SEQ */
@@ -191,14 +184,10 @@ SELECT
   v_variables_sesion BOOLEAN;
   v_row_number VARCHAR2(70);
   v_encontrado_var_row_number BOOLEAN;
-  v_tipo_particionado VARCHAR2(10);
-  v_campo_parti_en_pk    PLS_integer;
   v_CVE_DIA_es_col        PLS_integer;
   v_CVE_MES_es_col      PLS_integer;
-  v_CVE_WEEK_es_col     PLS_integer;
   v_nombre_campo_particionado VARCHAR2(30);
   
-
   
 
 
@@ -1279,6 +1268,7 @@ SELECT
         cadena_resul := regexp_replace(cadena_resul, '#VAR_MARGEN_COMISION#', ' 0.3 ');
         cadena_resul := regexp_replace(cadena_resul, '#VAR_FIN_DEFAULT#', ' ''9999-12-31'' ');
         cadena_resul := regexp_replace(cadena_resul, '#VAR_REGS_MEDIA#', VAR_REGS_MEDIA);
+
         /* (20170925) Angel Ruiz. NF. Aparece la varieble #VAR_PCT_COMISIONES#*/
         if (INSTR(cadena_resul, '#VAR_PCT_COMISIONES#') > 0) then 
           v_VAR_PCT_COMISIONES := true;
@@ -2040,7 +2030,7 @@ SELECT
               SELECT * INTO l_registro2
               FROM v_MTDT_CAMPOS_DETAIL
               WHERE TABLE_NAME =  reg_detalle_in.TABLE_NAME and
-              UPPER(TRIM(COLUMN_NAME)) = UPPER(TRIM(reg_detalle_in.TABLE_COLUMN));
+              COLUMN_NAME = reg_detalle_in.TABLE_COLUMN;
               if (l_registro2.TYPE = 'NUMBER') then
                 if (v_alias_incluido = 1) then
                   --valor_retorno :=  '    NVL(' || sustituye_comillas_dinam(reg_detalle_in.VALUE) || ', -2)';
@@ -2762,7 +2752,7 @@ SELECT
         end if;
       when 'VAR_FCH_CARGA' then
           --valor_retorno := '     ' || '''#VAR_FCH_DATOS#'''; /* (20161219) Angel Ruiz */
-          valor_retorno := '     ' || 'fch_carga_in'; /* (20161219) Angel Ruiz */
+          valor_retorno := '     ' || 'fch_datos_in'; /* (20161219) Angel Ruiz */
       when 'VAR_FCH_INI_MES' then
         /* (20170522) Angel Ruiz. Incñuyo una nueva variable VAR_FCH_INI_MES que contiene el primer dia del mes */
         --valor_retorno := '     ' || 'date_format(''#VAR_FCH_DATOS#'', ''yyyy-MM-01'')';
@@ -2781,14 +2771,14 @@ SELECT
 --          valor_retorno :=  '     ' ||  'TO_DATE (fch_carga_in, ''YYYYMMDD'')';
           --valor_retorno := '     ' || 'fch_datos_in';        
           --valor_retorno := '     ' || '''#VAR_FCH_DATOS#'''; /* (20161208) Angel Ruiz */
-          valor_retorno := '     ' || 'date_format(fch_datos_in, ''%Y%m%d'')'; /* (20161208) Angel Ruiz */
+          valor_retorno := '     ' || 'fch_datos_in'; /* (20161208) Angel Ruiz */
           
         end if;
         if reg_detalle_in.VALUE =  'VAR_FCH_CARGA' then /* Si se trata de la fecha de carga, la podemos coger del parametro de la funcion */
 --          valor_retorno := '     ' || 'TO_DATE (fch_carga_in, ''YYYYMMDD'')';
           --valor_retorno := '     ' || 'fch_datos_in';        
           --valor_retorno := '     ' || '''#VAR_FCH_DATOS#''';  /* (20161208) Angel Ruiz */      
-          valor_retorno := '     ' || 'date_format(fch_carga_in, ''%Y%m%d'')';  /* (20161208) Angel Ruiz */      
+          valor_retorno := '     ' || 'fch_datos_in';  /* (20161208) Angel Ruiz */      
           
         end if;
         if reg_detalle_in.VALUE =  'VAR_PAIS_TM' then /* Si se trata de la fecha de carga, la podemos coger del parametro de la funcion */
@@ -3245,6 +3235,7 @@ begin
   SELECT VALOR INTO PREFIJO_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'PREFIJO_DM';
   SELECT VALOR INTO ESQUEMA_DM FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'ESQUEMA_DM';
   SELECT VALOR INTO VAR_REGS_MEDIA FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'VAR_REGS_MEDIA';
+  
   --SELECT VALOR INTO v_MULTIPLICADOR_PROC FROM MTDT_VAR_ENTORNO WHERE NOMBRE_VAR = 'MULTIPLICADOR_PROC';
   
   /* (20141223) FIN*/
@@ -3892,17 +3883,15 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE inicio_paso_tmr TIMESTAMP;');
     --UTL_FILE.put_line(fich_salida_pkg, '  DECLARE sql_text VARCHAR(1000);');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE v_fch_particion VARCHAR(8);');
-    UTL_FILE.put_line(fich_salida_pkg, '  DECLARE v_fch_datos VARCHAR(8);');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE code CHAR(5) DEFAULT ''00000'';');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE msg TEXT;');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE errno INT;');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE EXIT HANDLER FOR SQLEXCEPTION');
     UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
-    --UTL_FILE.put_line(fich_salida_pkg, '    GET STACKED DIAGNOSTICS CONDITION 1');
-    UTL_FILE.put_line(fich_salida_pkg, '    GET DIAGNOSTICS CONDITION 1');
-    UTL_FILE.put_line(fich_salida_pkg, '    @code = RETURNED_SQLSTATE, @msg = MESSAGE_TEXT, @errno = MYSQL_ERRNO;');
+    UTL_FILE.put_line(fich_salida_pkg, '    GET STACKED DIAGNOSTICS CONDITION 1');
+    UTL_FILE.put_line(fich_salida_pkg, '    code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT, errno = MYSQL_ERRNO;');
     UTL_FILE.put_line(fich_salida_pkg, '    select ''Insercion en ' || reg_tabla.TABLE_NAME || ' erronea. ' || ESQUEMA_DM || '.neh_' || nombre_proceso || ' procedure error.'';');
-    UTL_FILE.put_line(fich_salida_pkg, '    select concat(''Error code: '', @errno, ''('', @code, ''). '', ''Mensaje: '', @msg);');
+    UTL_FILE.put_line(fich_salida_pkg, '    select concat(''Error code: '', errno, ''('', code, ''). '', ''Mensaje: '', msg);');
     UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_MTDT || '.inserta_monitoreo (''' || nombre_fich_carga || ''', 1, 1, inicio_paso_tmr, CURRENT_TIMESTAMP(), STR_TO_DATE(fch_datos_in,''%Y%m%d''), STR_TO_DATE(fch_carga_in,''%Y%m%d''), 0, 0, 0, 0, 0);');
     UTL_FILE.put_line(fich_salida_pkg, '    RESIGNAL;');
     UTL_FILE.put_line(fich_salida_pkg, '  END;');
@@ -3920,34 +3909,24 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '  if (forzado_in = ''F'') then');
     UTL_FILE.put_line(fich_salida_pkg, '    set siguiente_paso_a_ejecutar = 1;');
     UTL_FILE.put_line(fich_salida_pkg, '  end if;');
-    UTL_FILE.put_line(fich_salida_pkg, '  if (siguiente_paso_a_ejecutar = 1) then');
-    UTL_FILE.put_line(fich_salida_pkg, '    set inicio_paso_tmr = CURRENT_TIMESTAMP();');
-    UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
-    UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
-    /* (20200409) Angel Ruiz. NF. Tengo en cuenta el particionado Semanal para calcular la particion q he de crear */
+    /* (20191220) Angel Ruiz. Hay un BUG cuando la tabla es de hechos pero no esta particinada */
     OPEN c_mtdt_modelo_logico_COLUMNA (reg_tabla.TABLE_NAME);
     v_tipo_particionado := 'S';  /* (20150821) Angel Ruiz. Por defecto la tabla no estara particionada */
     LOOP
       FETCH c_mtdt_modelo_logico_COLUMNA
-      INTO r_mtdt_modelo_logico_COLUMNA;
+      INTO reg_modelo_logico_col;
       EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
-      --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4), '??F_',1,'i') >0 AND 
-      if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND 
-      (upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_DIA' or upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_DAY' or upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'DAY')) then 
+
+      if ((regexp_count(substr(reg_modelo_logico_col.TABLE_NAME, 1, instr(reg_modelo_logico_col.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND 
+      (upper(reg_modelo_logico_col.COLUMN_NAME) = 'CVE_DIA' or upper(reg_modelo_logico_col.COLUMN_NAME) = 'CVE_DAY' or upper(reg_modelo_logico_col.COLUMN_NAME) = 'DAY')) then 
         /* SE TRATA DE UNA TABLA DE HECHOS CON COLUMNA CVE_DIA ==> PARTICIONADO DIARIO */
         v_tipo_particionado := 'D';   /* Particionado Diario */
         v_CVE_DIA_es_col := 1;
       end if;
-      if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND 
-      upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_WEEK') then 
-        /* SE TRATA DE UNA TABLA DE HECHOS CON COLUMNA CVE_WEEK ==> PARTICIONADO SEMANAL */
-        v_tipo_particionado := 'W';   /* Particionado Semanal */
-        v_CVE_WEEK_es_col := 1;
-      end if;
       /* Gestionamos el posible particionado de la tabla */
       --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4) ,'??F_',1,'i') >0 AND
-      if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND
-      upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_MES') then 
+      if ((regexp_count(substr(reg_modelo_logico_col.TABLE_NAME, 1, instr(reg_modelo_logico_col.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND
+      upper(reg_modelo_logico_col.COLUMN_NAME) = 'CVE_MES') then 
         /* SE TRATA DE UNA TABLA DE HECHOS CON COLUMNA CVE_MES ==> PARTICIONADO MENSUAL */
         if (reg_tabla.PARTICIONADO = 'M24') then
           /* (20150918) Angel Ruiz. NF: Se trata del particionado para BSC. Mensual pero 24 Particiones fijas.*/
@@ -3959,17 +3938,26 @@ begin
         v_CVE_MES_es_col := 1;
       end if;
       --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4), '??A_',1,'i') >0 AND
-      if ((regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, instr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, '_')), '^?+A_',1,'i') >0) AND
-      upper(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME) = 'CVE_MES') then
+      if ((regexp_count(substr(reg_modelo_logico_col.TABLE_NAME, 1, instr(reg_modelo_logico_col.TABLE_NAME, '_')), '^?+A_',1,'i') >0) AND
+      upper(reg_modelo_logico_col.COLUMN_NAME) = 'CVE_MES') then
         /* SE TRATA DE UNA TABLA DE AGREGADOS CON PARTICIONAMIENTO POR MES */
         v_tipo_particionado := 'M';   /* Particionado Mensual, aunque para una tabla de Agregados*/
       end if;
-    END LOOP;
+      /* (20150821) ANGEL RUIZ. FIN FUNCIONALIDAD PARA PARTICIONADO */
+    END LOOP; 
     CLOSE c_mtdt_modelo_logico_COLUMNA;
-    /* (20200409) Angel Ruiz. Fin NF: Tengo en cuenta el particionado Semanal para calcular la particion q he de crear  */
-    /* (20200409) Angel Ruiz. NF: Tengo en cuenta el particionado Semanal para calcular la particion q he de crear*/
-    if (v_tipo_particionado = 'D') then
-      /* Hablamos de un particionado normal diario */
+    /* (20191220) Angel Ruiz. FIN BUG*/    
+    
+    UTL_FILE.put_line(fich_salida_pkg, '  if (siguiente_paso_a_ejecutar = 1) then');
+    UTL_FILE.put_line(fich_salida_pkg, '    set inicio_paso_tmr = CURRENT_TIMESTAMP();');
+    UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
+    UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
+    UTL_FILE.put_line(fich_salida_pkg, '');
+    UTL_FILE.put_line(fich_salida_pkg, '');
+    UTL_FILE.put_line(fich_salida_pkg, '');
+    /* (20191220) Angel Ruiz. BUG de las tablas de hechos que no están particionadas */
+    if (v_tipo_particionado <> 'S') then
+        /* Significa que la tabla aunque es de hecho no esta particionada */
       UTL_FILE.put_line(fich_salida_pkg, '    /* Veo si la particion en la que se insertaran los registros existe */');
       UTL_FILE.put_line(fich_salida_pkg, '    if not exists (select 1 from INFORMATION_SCHEMA.PARTITIONS where TABLE_SCHEMA = ''' || ESQUEMA_DM || ''' AND TABLE_NAME = ''' || reg_tabla.TABLE_NAME || ''' AND PARTITION_NAME = concat(''' || v_nombre_particion || ''', ''_'', fch_datos_in)' ||') then');
       UTL_FILE.put_line(fich_salida_pkg, '      /* Si no existe se crea */');
@@ -3987,34 +3975,7 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
       UTL_FILE.put_line(fich_salida_pkg, '    end if;');
     end if;
-    if (v_tipo_particionado = 'W') then
-      /* Hablamos de un particionado semanal */
-      UTL_FILE.put_line(fich_salida_pkg, '    /* Veo si la particion en la que se insertaran los registros existe */');
-      UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_datos = date_format(str_to_date(fch_datos_in, ''%Y%m%d''), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    if not exists (select 1 from INFORMATION_SCHEMA.PARTITIONS where TABLE_SCHEMA = ''' || ESQUEMA_DM || ''' AND TABLE_NAME = ''' || reg_tabla.TABLE_NAME || ''' AND PARTITION_NAME = concat(''' || v_nombre_particion || ''', ''_'', v_fch_datos)' ||') then');
-      UTL_FILE.put_line(fich_salida_pkg, '      /* Si no existe se crea */');
-      --UTL_FILE.put_line(fich_salida_pkg, '      set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), -1), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      --UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' ADD PARTITION (PARTITION '', ''' || v_nombre_particion || '_'', ' || 'v_fch_datos, '' VALUES LESS THAN ('', v_fch_particion, ''));'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' ADD PARTITION (PARTITION '', ''' || v_nombre_particion || '_'', ' || 'v_fch_particion, '' VALUES LESS THAN ('', v_fch_datos, ''));'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
-      UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '    else');
-      UTL_FILE.put_line(fich_salida_pkg, '      /* Si existe se trunca */');
-      --UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' TRUNCATE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'v_fch_datos, '';'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' TRUNCATE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'v_fch_particion, '';'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
-      UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '    end if;');
-    end if;
-    /* (20200409) Angel Ruiz. NF FIN: Tengo en cuenta el particionado Semanal para calcular la particion q he de crear*/
-    
-    UTL_FILE.put_line(fich_salida_pkg, '');
-    UTL_FILE.put_line(fich_salida_pkg, '');
-    UTL_FILE.put_line(fich_salida_pkg, '');
+    /* (20191220) Angel Ruiz. FIN BUG de las tablas de hechos que no están particionadas */
     
     FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
     LOOP
@@ -4039,16 +4000,15 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE siguiente_paso_a_ejecutar int;');
     --UTL_FILE.put_line(fich_salida_pkg, '  DECLARE sql_text VARCHAR(1000);');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE v_fch_particion VARCHAR(8);');
-    UTL_FILE.put_line(fich_salida_pkg, '  DECLARE v_fch_datos VARCHAR(8);');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE code CHAR(5) DEFAULT ''00000'';');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE msg TEXT;');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE errno INT;');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE EXIT HANDLER FOR SQLEXCEPTION');
     UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
-    UTL_FILE.put_line(fich_salida_pkg, '    GET DIAGNOSTICS CONDITION 1');
-    UTL_FILE.put_line(fich_salida_pkg, '    @code = RETURNED_SQLSTATE, @msg = MESSAGE_TEXT, @errno = MYSQL_ERRNO;');
+    UTL_FILE.put_line(fich_salida_pkg, '    GET STACKED DIAGNOSTICS CONDITION 1');
+    UTL_FILE.put_line(fich_salida_pkg, '    code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT, errno = MYSQL_ERRNO;');
     UTL_FILE.put_line(fich_salida_pkg, '    select ''Insercion en ' || reg_tabla.TABLE_NAME || ' erronea. ' || ESQUEMA_DM || '.lex_' || nombre_proceso || ' procedure error.'';');
-    UTL_FILE.put_line(fich_salida_pkg, '    select concat(''Error code: '', @errno, ''('', @code, ''). '', ''Mensaje: '', @msg);');
+    UTL_FILE.put_line(fich_salida_pkg, '    select concat(''Error code: '', errno, ''('', code, ''). '', ''Mensaje: '', msg);');
     UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_MTDT || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', siguiente_paso_a_ejecutar, 1, inicio_paso_tmr, CURRENT_TIMESTAMP(), STR_TO_DATE(fch_datos_in,''%Y%m%d''), STR_TO_DATE(fch_carga_in,''%Y%m%d''), num_reg, 0, 0, 0, 0);');
     UTL_FILE.put_line(fich_salida_pkg, '    RESIGNAL;');
     UTL_FILE.put_line(fich_salida_pkg, '  END;');
@@ -4068,27 +4028,54 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '    /* Comienza en el primer paso */');
     UTL_FILE.put_line(fich_salida_pkg, '    set inicio_paso_tmr = CURRENT_TIMESTAMP();');
     UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
-    
-    
-    /* (20200409) Angel Ruiz. NF: Tengo en cuenta el particionado */
-    if (v_tipo_particionado = 'D') then
-      /* Se trata de particionamiento diario */
+
+    if v_tipo_particionado = 'S' then
+      /* La tabla no esta particionada */
+      
+      UTL_FILE.put_line(fich_salida_pkg, '    INSERT');
+      UTL_FILE.put_line(fich_salida_pkg, '    INTO ' || ESQUEMA_DM || '.' || reg_tabla.TABLE_NAME);
+      UTL_FILE.put_line(fich_salida_pkg, '    (');
+      primera_col := 1;
+      OPEN c_mtdt_modelo_logico_COLUMNA (reg_tabla.TABLE_NAME);
+      LOOP
+        FETCH c_mtdt_modelo_logico_COLUMNA
+        INTO reg_modelo_logico_col;
+        EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
+        if primera_col = 1 then
+          UTL_FILE.put_line(fich_salida_pkg, '    `' || reg_modelo_logico_col.COLUMN_NAME || '`');
+          primera_col := 0;
+        else
+          UTL_FILE.put_line(fich_salida_pkg, '   , `' || reg_modelo_logico_col.COLUMN_NAME || '`');
+        end if;        
+      END LOOP;
+      close c_mtdt_modelo_logico_COLUMNA;
+      UTL_FILE.put_line(fich_salida_pkg, '    )');
+      UTL_FILE.put_line(fich_salida_pkg, '    SELECT');
+      OPEN c_mtdt_modelo_logico_COLUMNA (reg_tabla.TABLE_NAME);
+      primera_col := 1;
+      LOOP
+        FETCH c_mtdt_modelo_logico_COLUMNA
+        INTO reg_modelo_logico_col;
+        EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
+        if primera_col = 1 then
+          UTL_FILE.put_line(fich_salida_pkg, '    `' || reg_modelo_logico_col.COLUMN_NAME || '`');
+          primera_col := 0;
+        else
+          UTL_FILE.put_line(fich_salida_pkg, '   , `' || reg_modelo_logico_col.COLUMN_NAME || '`');
+        end if;        
+      END LOOP;
+      close c_mtdt_modelo_logico_COLUMNA;
+      UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
+      UTL_FILE.put_line(fich_salida_pkg, '    ;');
+    else
+      /* La tabla esta particionada */
       UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%m%d'');');
       UTL_FILE.put_line(fich_salida_pkg, '');
       UTL_FILE.put_line(fich_salida_pkg, '    SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' EXCHANGE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '' WITH TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';'');');
+      UTL_FILE.put_line(fich_salida_pkg, '    PREPARE stmt FROM @sql_text;');
+      UTL_FILE.put_line(fich_salida_pkg, '    execute stmt;');
+      UTL_FILE.put_line(fich_salida_pkg, '    DEALLOCATE PREPARE stmt;');
     end if;
-    if (v_tipo_particionado = 'W') then
-      /* Se trata de particionamiento semanal */
-      --UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), -1), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_datos = date_format(str_to_date(fch_datos_in, ''%Y%m%d''), ''%Y%u'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      --UTL_FILE.put_line(fich_salida_pkg, '    SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' EXCHANGE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'v_fch_datos, '' WITH TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' EXCHANGE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'v_fch_particion, '' WITH TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';'');');
-    end if;
-    UTL_FILE.put_line(fich_salida_pkg, '    PREPARE stmt FROM @sql_text;');
-    UTL_FILE.put_line(fich_salida_pkg, '    execute stmt;');
-    UTL_FILE.put_line(fich_salida_pkg, '    DEALLOCATE PREPARE stmt;');
     UTL_FILE.put_line(fich_salida_pkg, '');
     UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_MTDT || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 1, 0, inicio_paso_tmr, CURRENT_TIMESTAMP(), STR_TO_DATE(fch_datos_in,''%Y%m%d''), STR_TO_DATE(fch_carga_in,''%Y%m%d''), 0, 0, 0, 0, num_reg);');
     UTL_FILE.put_line(fich_salida_pkg, '    commit;');

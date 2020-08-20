@@ -113,29 +113,29 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL auto_increment');
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' NOT NULL auto_increment');
                 else
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
                     else
                       --DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                       end if;
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                       end if;
                     end if;
                   end if;
@@ -143,15 +143,15 @@ BEGIN
                 /* (20200302) Angel Ruiz. NF FIN. Se trata de un valor AUTOINCREMENT */
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                 end if;
             END CASE;
           ELSE    /* NO TIENE VALOR POR DEFECTO */
@@ -159,37 +159,37 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                 if (r_mtdt_modelo_logico_TABLA.CI = 'N' and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT');
                   end if;
                 else
                   if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
                     v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' NOT NULL');
                     else
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT');
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                     else
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                     end if;
                   end if;
                 end if;
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME'  || ' NOT NULL');
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME'  || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' );
+                  DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME' );
                 end if;
             END CASE;
           END IF;
@@ -200,44 +200,44 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                 /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL auto_increment');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' NOT NULL auto_increment');
                 else              
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and ((r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5)) or (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID'))) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      --DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
+                      --DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL AUTO_INCREMENT');
                     else
                       --DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' AUTO_INCREMENT');
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;                  
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                       end if;
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                       end if;
                     end if;
                   end if;
                 end if;
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                 end if;
               END CASE;
           ELSE  /* Si no existen valores por defecto */
@@ -245,37 +245,37 @@ BEGIN
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                 if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT');
                   end if;
                 else
                   if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
                     v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' NOT NULL');
                     else
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT');
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                     else
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                     end if;
                   end if;
                 end if;
               WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                 end if;
               ELSE  /* se trata de Fecha  */
                 if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' NOT NULL');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME' || ' NOT NULL');
                 else
-                  DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME');
+                  DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME');
                 end if;
               END CASE;
           END IF;
@@ -706,27 +706,27 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL auto_increment');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' NOT NULL auto_increment');
                   else
                     if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                       end if;
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
                         v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                          DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                          DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                         else
-                          DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                          DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                         end if;
                       else
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                          DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                          DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                         else
-                          DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                          DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                         end if;
                       end if;
                     end if;
@@ -734,15 +734,15 @@ BEGIN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                   end if;
               END CASE;
             ELSE
@@ -750,37 +750,37 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT'  || ' NOT NULL');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT'  || ' NOT NULL');
                     else
-                      DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                      DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT');
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT');
                       end if;
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                        DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                       end if;
                     end if;
                   end if;
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME'  || ' NOT NULL');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME'  || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' );
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'DATETIME' );
                   end if;
               END CASE;
             END IF;
@@ -791,27 +791,27 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                   if (UPPER(TRIM(r_mtdt_modelo_logico_COLUMNA.VDEFAULT)) = 'AUTO') then
-                    DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL auto_increment');
+                    DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`'|| '          ' || 'BIGINT' || ' NOT NULL auto_increment');
                   else
                     if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT');
                       end if;
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then                
                         v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                          DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                          DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                         else
-                          DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                          DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                         end if;
                       else
                         if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                          DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                          DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                         else
-                          DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                          DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                         end if;
                       end if;
                     end if;
@@ -819,15 +819,15 @@ BEGIN
                   /* (20200302) Angel Ruiz. NF. Se trata de un valor AUTOINCREMENT */
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''' || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' DEFAULT ''' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || '''');
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME' || ' DEFAULT ' || r_mtdt_modelo_logico_COLUMNA.VDEFAULT);
                   end if;
                 END CASE;
             ELSE
@@ -835,37 +835,37 @@ BEGIN
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) THEN
                   if (r_mtdt_modelo_logico_TABLA.CI = 'N' and (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_' ||  SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = SUBSTR(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME,5) || '_ID')) then
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT'  || ' NOT NULL');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT'  || ' NOT NULL');
                     else
-                      DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                      DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT');
                     end if;
                   else
                     if (r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DIA' OR r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_MES' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'DAY' or r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME = 'CVE_WEEK') then                
                       v_nombre_campo_particionado:= r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME;
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT' || ' NOT NULL');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT' || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'BIGINT');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'BIGINT');
                       end if;
                     else
                       if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                       else
-                        DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                        DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DECIMAL' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                       end if;
                     end if;
                   end if;
                 WHEN (INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'VARCHAR') > 0) THEN
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')) || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'VARCHAR' || substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, INSTR(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, '(')));
                   end if;
                 ELSE  /* se trata de Fecha  */
                   if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME'  || ' NOT NULL');
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME'  || ' NOT NULL');
                   else
-                    DBMS_OUTPUT.put_line(', ' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '          ' || 'DATETIME' );
+                    DBMS_OUTPUT.put_line(', `' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`' || '          ' || 'DATETIME' );
                   end if;
               END CASE;
             END IF;
@@ -973,7 +973,7 @@ BEGIN
             EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
     
             IF primera_col = 1 THEN /* Si es primera columna */
-                DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
+                DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`');
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
                     cadena_values := '-1';
@@ -1037,12 +1037,30 @@ BEGIN
                         end if;
                       end if;
                     else
-                      cadena_values := 'NULL';
+                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
+                        cadena_values := '-1';
+                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
+                        cadena_values := 'sysdate()';
+                      else
+                        /* VARCHAR */
+                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
+                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
+                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
+                        longitud_des_numerico := to_number(longitud_des);
+                        if (longitud_des_numerico > 8) then
+                          cadena_values := '''NO APLICA''';
+                        elsif (longitud_des_numerico > 2) then
+                          cadena_values := '''NA#''';
+                        else
+                          --cadena_values := '''N''';
+                          cadena_values := 'NULL';
+                        end if;
+                      end if;
                     end if;
                 END CASE;  
                 primera_col := 0;
             ELSE  /* si no es primera columna */
-                DBMS_OUTPUT.put_line(',' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
+                DBMS_OUTPUT.put_line(',`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`');
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
                     cadena_values := cadena_values || ', -1';
@@ -1106,7 +1124,25 @@ BEGIN
                         end if;
                       end if;
                     else
-                      cadena_values := cadena_values || ', NULL';
+                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
+                        cadena_values := cadena_values || ', -1';
+                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
+                        cadena_values := cadena_values || ', sysdate()';
+                      else
+                        /* VARCHAR */
+                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
+                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
+                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
+                        longitud_des_numerico := to_number(longitud_des);
+                        if (longitud_des_numerico > 8) then
+                          cadena_values := cadena_values || ', ''NO APLICA''';
+                        elsif (longitud_des_numerico > 2) then
+                          cadena_values := cadena_values || ', ''NA#''';
+                        else
+                          --cadena_values := cadena_values || ', ''N''';
+                          cadena_values := cadena_values || ', NULL';
+                        end if;
+                      end if;
                     end if;
                 END CASE;  
             END IF;
@@ -1128,7 +1164,7 @@ BEGIN
             EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
     
             IF primera_col = 1 THEN /* Si es primera columna */
-                DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
+                DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`');
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4),'CVE_',1,'i') >0 THEN
                     cadena_values := '-2';
@@ -1192,12 +1228,30 @@ BEGIN
                         end if;
                       end if;
                     else
-                      cadena_values := 'NULL';
+                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
+                        cadena_values := '-2';
+                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
+                        cadena_values := 'sysdate()';
+                      else
+                        /* VARCHAR */
+                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
+                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
+                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
+                        longitud_des_numerico := to_number(longitud_des);
+                        if (longitud_des_numerico > 8) then
+                          cadena_values := '''GENERICO''';
+                        elsif (longitud_des_numerico > 2) then
+                          cadena_values := '''GE#''';
+                        else
+                          --cadena_values := '''G''';
+                          cadena_values := 'NULL';
+                        end if;
+                      end if;
                     end if;
                 END CASE;  
                 primera_col := 0;
             ELSE  /* si no es primera columna */
-                DBMS_OUTPUT.put_line(',' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
+                DBMS_OUTPUT.put_line(',`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`');
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
                     cadena_values := cadena_values || ', -2';
@@ -1261,7 +1315,25 @@ BEGIN
                         end if;
                       end if;
                     else
-                      cadena_values := cadena_values || ', NULL';
+                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
+                        cadena_values := cadena_values || ', -2';
+                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
+                        cadena_values := cadena_values || ', sysdate()';
+                      else
+                        /* VARCHAR */
+                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
+                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
+                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
+                        longitud_des_numerico := to_number(longitud_des);
+                        if (longitud_des_numerico > 8) then
+                          cadena_values := cadena_values || ', ''GENERICO''';
+                        elsif (longitud_des_numerico > 2) then
+                          cadena_values := cadena_values || ', ''GE#''';
+                        else
+                          --cadena_values := cadena_values || ', ''G''';
+                          cadena_values := cadena_values || ', NULL';
+                        end if;
+                      end if;
                     end if;
                 END CASE;  
             END IF;
@@ -1283,7 +1355,7 @@ BEGIN
             EXIT WHEN c_mtdt_modelo_logico_COLUMNA%NOTFOUND;
     
             IF primera_col = 1 THEN /* Si es primera columna */
-                DBMS_OUTPUT.put_line(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
+                DBMS_OUTPUT.put_line('`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`');
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
                     cadena_values := '-3';
@@ -1347,12 +1419,30 @@ BEGIN
                         end if;
                       end if;
                     else
-                      cadena_values := 'NULL';
+                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
+                        cadena_values := '-3';
+                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
+                        cadena_values := 'sysdate()';
+                      else
+                        /* VARCHAR */
+                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
+                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
+                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
+                        longitud_des_numerico := to_number(longitud_des);
+                        if (longitud_des_numerico > 8) then
+                          cadena_values := '''NO INFORMADO''';
+                        elsif (longitud_des_numerico > 2) then
+                          cadena_values := '''NI#''';
+                        else
+                          --cadena_values := '''N''';
+                          cadena_values := 'NULL';                      
+                        end if;
+                      end if;
                     end if;
                 END CASE;  
                 primera_col := 0;
             ELSE  /* si no es primera columna */
-                DBMS_OUTPUT.put_line(',' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME);
+                DBMS_OUTPUT.put_line(',`' || r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME || '`');
                 CASE
                   WHEN regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.COLUMN_NAME, 1, 4), 'CVE_',1,'i') >0 THEN
                     cadena_values := cadena_values || ', -3';
@@ -1398,7 +1488,7 @@ BEGIN
                   ELSE
                     if (r_mtdt_modelo_logico_COLUMNA.NULABLE = 'N') then
                       if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
-                        cadena_values := cadena_values || ', -1';
+                        cadena_values := cadena_values || ', -3';
                       elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
                         cadena_values := cadena_values || ', sysdate()';
                       else
@@ -1416,7 +1506,25 @@ BEGIN
                         end if;
                       end if;
                     else
-                      cadena_values := cadena_values || ', NULL';
+                      if (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'NUMBER') > 0) then
+                        cadena_values := cadena_values || ', -3';
+                      elsif (regexp_count(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, 'DATE') > 0) then
+                        cadena_values := cadena_values || ', sysdate()';
+                      else
+                        /* VARCHAR */
+                        pos_abre_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,'(');
+                        pos_cierra_paren := instr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE,')');
+                        longitud_des := substr(r_mtdt_modelo_logico_COLUMNA.DATA_TYPE, pos_abre_paren+1, (pos_cierra_paren - pos_abre_paren)-1);
+                        longitud_des_numerico := to_number(longitud_des);
+                        if (longitud_des_numerico > 8) then
+                          cadena_values := cadena_values || ', ''NO INFORMADO''';
+                        elsif (longitud_des_numerico > 2) then
+                          cadena_values := cadena_values || ', ''NI#''';
+                        else
+                          --cadena_values := cadena_values || ', ''N''';
+                          cadena_values := cadena_values || ', NULL';
+                        end if;
+                      end if;
                     end if;
                 END CASE;  
             END IF;

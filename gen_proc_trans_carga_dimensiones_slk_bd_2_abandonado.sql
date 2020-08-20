@@ -26,9 +26,12 @@ cursor MTDT_TABLA
     --, 'CMBD_COURSES_DETAIL', 'CMBD_CATEGORIES', 'CMBD_GROUPS', 'CMBD_BRANCHES', 'CMBD_USERS', 'CMBD_USERS_PROFILE'
     --, 'CMBD_USERS_RASGOS', 'CMBD_USERS_ROLES', 'CMBD_USERS_OPS', 'CMBD_USERS_CONSUM_PREF_DETAIL', 'CMBD_USERS_CONSUM_PREF'
     --, 'CMBD_USERS_FORMULARIO', 'CMBD_USERS_WARNINGS', 'CMBD_SURVEY', 'CMBD_SURVEY_DETAIL'
-    'KRC_PROVIDER_IDENTITY', 'KRC_ADDRESS', 'KRC_CONTACT', 'KRC_PRODUCT', 'KRC_PURCHASE', 'KRC_CATEGORY', 'KRC_OFFER', 'KRC_USER', 'KRC_ORDER', 'KRC_PRODUCT_CATEGORY'
-    , 'KRC_WEEK_SALES', 'KRC_PRODUCT_TYPE', 'DMD_MESA', 'KRC_SUBURB', 'KRC_DISTRICT', 'KRC_CITY', 'KRC_PROVINCE', 'KRC_STATE', 'KRC_COUNTRY', 'KRC_TAX_TYPE', 
-    'KRC_OFFER_COMP')
+    'KRC_PERSONE_IDENTITY', 'KRC_ADDRESS', 'KRC_CONTACT', 'KRC_PRODUCT', 'KRC_PURCHASE', 'KRC_CATEGORY', 'KRC_OFFER', 'KRC_USER', 'KRC_ORDER', 'KRC_PRODUCT_CATEGORY'
+    , 'KRC_PRODUCT_TYPE', 'DMD_MESA', 'KRC_SUBURB', 'KRC_DISTRICT', 'KRC_CITY', 'KRC_PROVINCE', 'KRC_STATE', 'KRC_COUNTRY'
+    , 'KRC_TAX_TYPE', 
+    'KRC_PRODUCT_AVAIL'
+      
+    )
     --(
     --'SA_SOLAPES_DESC', 'SA_DESHACE_SOLAPES_DESC'
     --)
@@ -256,6 +259,9 @@ cursor MTDT_TABLA
   v_variables_sesion BOOLEAN;
   v_row_number VARCHAR2(70);
   v_encontrado_var_row_number BOOLEAN;
+  V_EXISTE_ESCENARIO_I BOOLEAN:=false;  /* (20200117)*/
+  v_TABLE_BASE_NAME_SCENARIO_I reg_scenario.TABLE_BASE_NAME%type; /* (20200117)*/
+  v_TABLE_NAME_SCENARIO_I reg_scenario.TABLE_NAME%type; /* (20200117)*/
   
   
   
@@ -3389,8 +3395,8 @@ begin
         exit when MTDT_SCENARIO%NOTFOUND;
         dbms_output.put_line ('Estoy en el segundo LOOP. La tabla que tengo es: ' || reg_tabla.TABLE_NAME || '. El escenario es: ' || reg_scenario.SCENARIO);
         /* Elaboramos los prototipos de la funciones que cargaran los distintos escenarios */
-        if (reg_scenario.SCENARIO = 'N' or regexp_instr(reg_scenario.SCENARIO, '^N_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_N$') > 0)
-        then
+        --if (reg_scenario.SCENARIO = 'N' or regexp_instr(reg_scenario.SCENARIO, '^N_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_N$') > 0)
+        --then
           /* Tenemos el escenario Nuevo */
           --UTL_FILE.put_line(fich_salida_pkg,'');
           --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION nreg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER;');
@@ -3400,9 +3406,9 @@ begin
           lista_scenarios_presentes.EXTEND;
           --lista_scenarios_presentes(lista_scenarios_presentes.LAST) := 'N';
           lista_scenarios_presentes(lista_scenarios_presentes.LAST) := reg_scenario.SCENARIO;
-        end if;
-        if (reg_scenario.SCENARIO = 'E' or regexp_instr(reg_scenario.SCENARIO, '^E_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_E$') > 0)
-        then
+        --end if;
+        --if (reg_scenario.SCENARIO = 'E' or regexp_instr(reg_scenario.SCENARIO, '^E_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_E$') > 0)
+        --then
         /* Tenemos el escenario Existente */
           --UTL_FILE.put_line(fich_salida_pkg,'');
           --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION upt_reg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER;');
@@ -3410,22 +3416,22 @@ begin
           
           --UTL_FILE.put_line(fich_salida_pkg,'');
           /* Guardamos una lista con los escenarios que posee la tabla que vamos a cargar */
-          lista_scenarios_presentes.EXTEND;
+        --  lista_scenarios_presentes.EXTEND;
           --lista_scenarios_presentes(lista_scenarios_presentes.LAST) := 'E';
-          lista_scenarios_presentes(lista_scenarios_presentes.LAST) := reg_scenario.SCENARIO;
-        end if;
-        if (reg_scenario.SCENARIO = 'H' or regexp_instr(reg_scenario.SCENARIO, '^H_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_H$') > 0)
-        then
+        --  lista_scenarios_presentes(lista_scenarios_presentes.LAST) := reg_scenario.SCENARIO;
+        --end if;
+        --if (reg_scenario.SCENARIO = 'H' or regexp_instr(reg_scenario.SCENARIO, '^H_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_H$') > 0)
+        --then
         /* Tenemos el escenario Historico */
           --UTL_FILE.put_line(fich_salida_pkg,'');
           --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION hst_reg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER;');
           --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION hreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER;');
           --UTL_FILE.put_line(fich_salida_pkg,'');
           /* Guardamos una lista con los escenarios que posee la tabla que vamos a cargar */
-          lista_scenarios_presentes.EXTEND;
+        --  lista_scenarios_presentes.EXTEND;
           --lista_scenarios_presentes(lista_scenarios_presentes.LAST) := 'H';
-          lista_scenarios_presentes(lista_scenarios_presentes.LAST) := reg_scenario.SCENARIO;
-        end if;
+        --  lista_scenarios_presentes(lista_scenarios_presentes.LAST) := reg_scenario.SCENARIO;
+        --end if;
       end loop;   /* Fin del loop MTDT_SCENARIO */
       close MTDT_SCENARIO;
       --UTL_FILE.put_line(fich_salida_pkg,'');
@@ -3474,902 +3480,435 @@ begin
       fetch MTDT_SCENARIO
       into reg_scenario;
       exit when MTDT_SCENARIO%NOTFOUND;
-        dbms_output.put_line ('Estoy en el segundo LOOP MTDT_SCENARIO. El escenario es: ' || reg_scenario.SCENARIO);
-        --if (reg_scenario.SCENARIO like 'N%')
-        if ((reg_scenario.SCENARIO = 'N' or regexp_instr(reg_scenario.SCENARIO, '^N_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_N$') > 0))
-        then
-          /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
-          /* componentes del From y del Where */
-          l_FROM.delete;
-          l_WHERE.delete;
-          l_FROM_solo_tablas.delete;
-          lista_variables_rownumber.delete;
-          
-          v_hay_regla_seq:=false;
-          v_num_sce_NUEVOS := v_num_sce_NUEVOS + 1; /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios nuevos */
-          /* ESCENARIO NUEVO */
-          dbms_output.put_line ('Estoy en el escenario: ' || reg_scenario.SCENARIO);
-          --UTL_FILE.put_line(fich_salida_pkg,'');
-          --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION new_reg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
-          --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION nreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
-          --UTL_FILE.put_line(fich_salida_pkg, '  IS');
-          --UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER;');
-          --UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio date := sysdate;');
-          --UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO NUEVO: ' || reg_scenario.SCENARIO || ' ###');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          
-          /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
-          v_variables_sesion := false;
-          if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
-            v_variables_sesion := true;
-            v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
-            lista_variables_rownumber.EXTEND;
-            lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
-          end if;
-          if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
-            v_variables_sesion := true;
-            v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
-            v_encontrado_var_row_number:=false;
-            if (lista_variables_rownumber.count > 0) then
-              for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-              loop
-                if (lista_variables_rownumber(indice_n) = v_row_number) then
-                  v_encontrado_var_row_number:=true;
-                end if;
-                
-              end loop;
-            end if;
-            if (v_encontrado_var_row_number = false) then
-              lista_variables_rownumber.EXTEND;
-              lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
-            end if;              
-          end if;
-          v_contador:=0;
-          select count(*) into v_contador from MTDT_TC_DETAIL where 
-          trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
-          TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
-          instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
-          if (v_contador > 0) then
-            v_variables_sesion := true;
-            for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
-            WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
-            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
-            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
-            loop
-              v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
-              v_encontrado_var_row_number:=false;
-              if (lista_variables_rownumber.count > 0) then
-                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-                loop
-                  if (lista_variables_rownumber(indx) = v_row_number) then
-                    v_encontrado_var_row_number:=true;
-                  end if;
-                end loop;
-              end if;
-              if (v_encontrado_var_row_number = false) then
-                lista_variables_rownumber.EXTEND;
-                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
-              end if;              
-            end loop;
-          end if;
-          
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
-          
-          
-          --if (v_num_sce_NUEVOS = 1) then
-            /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios del mismo tipo, en este caso NUEVO*/
-            --UTL_FILE.put_line (fich_salida_pkg, 'TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
-          --end if;
-          --UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.nreg_' || nombre_proceso || ';');
-          UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ';');
-          UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
-          --UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.nreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR(8), fch_datos_in IN VARCHAR(8)) return DECIMAL');
-          UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
-          UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
-          UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_insertadas INT;');
-          UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
-          UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_insertadas = 0;');
-          UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
-          if v_variables_sesion = true then
-              for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-              loop
-                UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
-              end loop;
-              UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
-          end if;
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg,'  INSERT');
-          UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
-          UTL_FILE.put_line(fich_salida_pkg,'  (');
-          open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          primera_col := 1;
-          loop
-            fetch MTDT_TC_DETAIL
-            into reg_detail;
-            exit when MTDT_TC_DETAIL%NOTFOUND;
-            /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
-            if (upper(trim(reg_detail.RUL)) != 'AUTO') then
-              if primera_col = 1 then
-                --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
-                UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
-                primera_col := 0;
-              else
-                --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
-                UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
-              end if;        
-            end if;
-            /* (20200303) Angel Ruiz. FIN NF: Nueva regla AUTO para no tener que usar las secuencias*/
-          end loop;
-          close MTDT_TC_DETAIL;
-          UTL_FILE.put_line(fich_salida_pkg,'  )');
-          dbms_output.put_line ('He pasado la parte del INTO');
-          /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
-          /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
-          /****/
-          UTL_FILE.put_line(fich_salida_pkg,'  SELECT');
-          open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          primera_col := 1;
-          loop
-            fetch MTDT_TC_DETAIL
-            into reg_detail;
-            exit when MTDT_TC_DETAIL%NOTFOUND;
-            /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
-            if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+        if (reg_scenario.TABLE_COLUMNS is not null and reg_scenario.INTERFACE_COLUMNS is not null) then
+          /* (20200128) Angel Ruiz. Estamos ante un escenrio que no sigue los escenarios clasicos N, E, H de las dimensiones */
+          dbms_output.put_line ('Estoy en el segundo LOOP MTDT_SCENARIO. El escenario es: ' || reg_scenario.SCENARIO);
+          --if (reg_scenario.SCENARIO like 'N%')
+          if ((reg_scenario.SCENARIO = 'N' or regexp_instr(reg_scenario.SCENARIO, '^N_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_N$') > 0))
+          then
+            /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
+            /* componentes del From y del Where */
+            l_FROM.delete;
+            l_WHERE.delete;
+            l_FROM_solo_tablas.delete;
+            lista_variables_rownumber.delete;
             
-              dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
-              columna := genera_campo_select (reg_detail);
-              if primera_col = 1 then
-                --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' ' || reg_detail.TABLE_COLUMN);
-                UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
-                primera_col := 0;
-              else
-                --UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' ' || reg_detail.TABLE_COLUMN);
-                UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
-              end if;
-            end if;
-            /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
-          end loop;
-          close MTDT_TC_DETAIL;
-          /****/
-          /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
-          /****/ 
-          /****/
-          /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
-          /****/
-          dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
-          UTL_FILE.put_line(fich_salida_pkg,'  FROM');
-          /* (20170104) Angel Ruiz. Pueden aparecer Queries en TABLE_BASE_NAME */
-          if (regexp_instr (reg_scenario.TABLE_BASE_NAME,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
-            /* Tenemos una query en TABLE_BASE_NAME */
-            /* Es una query que posee un ALIAS */
-            v_alias_dim_table_base_name := trim(substr(REGEXP_SUBSTR (reg_scenario.TABLE_BASE_NAME, '\) *[a-zA-Z_0-9]+$'), 2));
-            --UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' LEFT OUTER JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-            UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' LEFT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-          else
-            /* No hay una query en TABLE_BASE_NAME*/
-            /* COMPROBAMOS SI AUNQUE NO HAY QUERY, HAY UN ALIAS */
-            if (REGEXP_LIKE(trim(reg_scenario.TABLE_BASE_NAME), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
-              /* Hay un ALIAS */
-              v_alias_dim_table_base_name := trim(REGEXP_SUBSTR(TRIM(reg_scenario.TABLE_BASE_NAME), ' +[a-zA-Z_0-9]+$'));
-            else
-              v_alias_dim_table_base_name:=reg_scenario.TABLE_BASE_NAME;
-            end if;
-            --UTL_FILE.put_line(fich_salida_pkg, '  ' || NAME_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' LEFT OUTER JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-            UTL_FILE.put_line(fich_salida_pkg, '  ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' LEFT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-          end if;
-          /* (20170104) Angel Ruiz. FIN. Pueden aparecer Queries en TABLE_BASE_NAME */
-          dbms_output.put_line ('Interface COLUMNS: ' || reg_scenario.INTERFACE_COLUMNS);
-          dbms_output.put_line ('Table COLUMNS: ' || reg_scenario.TABLE_COLUMNS);
-          where_interface_columns := split_string_punto_coma (reg_scenario.INTERFACE_COLUMNS);
-          where_table_columns := split_string_punto_coma(reg_scenario.TABLE_COLUMNS);
-          dbms_output.put_line ('El numero de valores del Where interface es: ' || where_interface_columns.count);
-          dbms_output.put_line ('El numero de valores del Where interface es: ' || where_table_columns.count);
-          /* (20161205) Angel Ruiz. Generacion de Dimensiones BIG DATA */
-          IF (where_interface_columns.COUNT > 0  and 
-            where_table_columns.COUNT > 0 and 
-            where_interface_columns.COUNT = where_table_columns.COUNT) 
-          THEN
-            /****/
-            /* INICIO generacion parte  WHERE */
-            /****/    
-            --UTL_FILE.put_line(fich_salida_pkg, '    ' || 'WHERE ');
-            /* Procesamos el campo FILTER . Lo añado a posteriori en la recta final (20141126*/
-            FOR indx IN where_interface_columns.FIRST .. where_interface_columns.LAST
-            LOOP
-              if indx = 1 then  /* Se trata del primer elemento */
-                /* (20160301) Angel Ruiz. NF: DECODE en campos */
-                if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
-                  --UTL_FILE.put_line(fich_salida_pkg,'    ' || transformo_decode(where_interface_columns(indx), reg_detail.TABLE_BASE_NAME, 0) || ' = ' || transformo_decode(where_table_columns(indx), reg_detail.TABLE_NAME, 0));
-                  UTL_FILE.put_line(fich_salida_pkg,'  ' || transformo_decode(where_interface_columns(indx), v_alias_dim_table_base_name, 0) || ' = ' || transformo_decode(where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
-                else
-                  /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
-                  if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  else
-                    --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  end if;
-                  /* (20191219) Angel Ruiz. FIN */
-                
-                  --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
-                  --UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                end if;
-              else
-                if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
-                  UTL_FILE.put_line(fich_salida_pkg,'  AND ' || transformo_decode(where_interface_columns(indx), v_alias_dim_table_base_name, 0) || ' = ' || transformo_decode(where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
-                else
-                  /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
-                  if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  else
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  end if;
-                  /* (20191219) Angel Ruiz. FIN */
-                
-                  --UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                end if;
-              end if;
-            END LOOP;
-            UTL_FILE.put_line (fich_salida_pkg,'    )');
-          end if;
-          /* (20160630) Angel Ruiz. NF: Dimensiones sin funciones cache, es decir, con JOINS */
-          v_hay_look_up:='N';
-          if l_FROM.count > 0 then
-            FOR indx IN l_FROM.FIRST .. l_FROM.LAST
-            LOOP
-              UTL_FILE.put_line(fich_salida_pkg, '   ' || l_FROM(indx));
-              v_hay_look_up := 'Y';
-            END LOOP;
-          end if;
-          /* FIN */
-          dbms_output.put_line ('Despues del FROM');
-          UTL_FILE.put_line(fich_salida_pkg, '  WHERE ');
-          if (reg_scenario.FILTER is not null) then
-            /* Añadimos el campo FILTER */
-            campo_filter := procesa_campo_filter(reg_scenario.FILTER);
-            --UTL_FILE.put_line(fich_salida_pkg, '    AND ' || campo_filter || ';');
-            UTL_FILE.put_line(fich_salida_pkg, '      ' || campo_filter );
-            UTL_FILE.put_line(fich_salida_pkg, '  AND '  || reg_scenario.TABLE_NAME || '.' || where_table_columns ( where_table_columns.FIRST) || ' IS NULL');
-          else
-            UTL_FILE.put_line(fich_salida_pkg, '      '  || reg_scenario.TABLE_NAME || '.' || where_table_columns ( where_table_columns.FIRST) || ' IS NULL');
-          end if;
-          
-          UTL_FILE.put_line(fich_salida_pkg,'  ;');
-          UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_insertadas;');
-          UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
-          UTL_FILE.put_line(fich_salida_pkg,'  END');
-          UTL_FILE.put_line(fich_salida_pkg,'  //');
-          UTL_FILE.put_line(fich_salida_pkg,'  DELIMITER ;');
-          --UTL_FILE.put_line(fich_salida_pkg,'    num_filas_insertadas := sql%rowcount;');
-          --UTL_FILE.put_line(fich_salida_pkg,'    commit;');
-          --UTL_FILE.put_line(fich_salida_pkg,'    RETURN num_filas_insertadas;');
-          
-          --UTL_FILE.put_line(fich_salida_pkg,'    exception');
-          --UTL_FILE.put_line(fich_salida_pkg,'    when NO_DATA_FOUND then');
-          --UTL_FILE.put_line(fich_salida_pkg,'      return sql%rowcount;');
-          --UTL_FILE.put_line(fich_salida_pkg,'    when OTHERS then');
-          --UTL_FILE.put_line(fich_salida_pkg,'      dbms_output.put_line (''Se ha producido un error al insertar los nuevos registros.'');');
-          --UTL_FILE.put_line(fich_salida_pkg,'      dbms_output.put_line (''Error code: '' || sqlcode || ''. Mensaje: '' || sqlerrm);');
-          --UTL_FILE.put_line(fich_salida_pkg,'      rollback;');
-          --UTL_FILE.put_line(fich_salida_pkg,'      RAISE;');
-          --UTL_FILE.put_line(fich_salida_pkg,'      return sqlcode;');
-          --UTL_FILE.put_line(fich_salida_pkg,'  END new_reg_' || reg_scenario.TABLE_NAME || ';');
-          --UTL_FILE.put_line(fich_salida_pkg,'  END nreg_' || nombre_proceso || ';');
-          --UTL_FILE.put_line(fich_salida_pkg, '');
-          /* (20170110) Angel Ruiz. Implemento la parte que tiene que ver con SEQ. */
-          /* Hay que modificar el valor de la tabla del metadato MTDT_SEQUENCIAS */
-          /*(20170107) Angel Ruiz. NF.: Reglas SEQ */
-          --if (v_hay_regla_seq = true) then
-            /* Controlo el valor maximo de la secuencia */
-            /* MODIFICANDO DICHO VALOR EN LA TABLA DEL METADATO relativa las secuencias */
-            --dbms_output.put_line ('-- Modifico el valor maximo de la secuencia');
-            /* (20170608) Angel Ruiz. BUG. Se corrige un BUG que hace que si se carga dos veces el mismo fichero */
-            /* al calcular el ultimo valor de la secuencia no funcione OK */
-            --UTL_FILE.put_line(fich_salida_pkg, 'DELETE FROM ' || OWNER_MTDT || '.MTDT_SEQUENCIAS WHERE ID_SEQ='''|| v_nombre_seq || ''';');
-            --UTL_FILE.put_line(fich_salida_pkg, 'INSERT INTO ' || OWNER_MTDT || '.MTDT_SEQUENCIAS SELECT '''|| v_nombre_seq || ''', NVL(MAX(' || v_nombre_campo_seq || '), 0) from ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
-            --UTL_FILE.put_line(fich_salida_pkg, '');
-            --UTL_FILE.put_line(fich_salida_pkg, '-- GESTION DE LA SECUENCIA');
-            --UTL_FILE.put_line(fich_salida_pkg, '-- Borro la secuencia de la tabla de secuencias si y solo si la tabla temporal posee filas');
-            --UTL_FILE.put_line(fich_salida_pkg, 'DELETE FROM ' || OWNER_MTDT || '.MTDT_SEQUENCIAS WHERE ID_SEQ IN (SELECT '''|| v_nombre_seq || ''' FROM ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ' TABLESAMPLE (1 ROWS));');
-            --UTL_FILE.put_line(fich_salida_pkg, '-- inserto el nuevo valor de la secuencia si y solo si la tabla temporal posee filas');
-            --UTL_FILE.put_line(fich_salida_pkg, 'INSERT INTO ' || OWNER_MTDT || '.MTDT_SEQUENCIAS');
-            --UTL_FILE.put_line(fich_salida_pkg, 'SELECT '''|| v_nombre_seq || ''', MAX_T_' || nombre_tabla_reducido || '.MAXIMO ');
-            --UTL_FILE.put_line(fich_salida_pkg, 'FROM');
-            --UTL_FILE.put_line(fich_salida_pkg, '(SELECT MAX(' || v_nombre_campo_seq || ') AS MAXIMO FROM ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ') MAX_T_' || nombre_tabla_reducido);
-            --UTL_FILE.put_line(fich_salida_pkg, 'WHERE MAX_T_' || nombre_tabla_reducido || '.MAXIMO IS NOT NULL;');
-            --v_hay_regla_seq:=false;
-          --end if;
-        end if;
-      end loop;
-      close MTDT_SCENARIO;
-      
-
-      /** COMIENZO  ESCENARIO EXISTENTE **/
-
-      open MTDT_SCENARIO (reg_scenario.TABLE_NAME);
-      loop
-      fetch MTDT_SCENARIO
-      into reg_scenario;
-      exit when MTDT_SCENARIO%NOTFOUND;
-        --if (reg_scenario.SCENARIO like 'E%')
-        if (reg_scenario.SCENARIO = 'E' or regexp_instr(reg_scenario.SCENARIO, '^E_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_E$') > 0)
-        then
-          /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
-          /* componentes del From y del Where */
-          l_FROM.delete;
-          l_WHERE.delete;
-          l_FROM_solo_tablas.delete;
-          lista_variables_rownumber.delete;
-          v_num_sce_EXISTENTES := v_num_sce_EXISTENTES + 1; /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios existentes */
-          
-          /* ESCENARIO EXISTENTE */
-          dbms_output.put_line ('Estoy en el escenario: E');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO EXISTENTE: ' || reg_scenario.SCENARIO || ' ###');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
-          v_variables_sesion := false;
-          if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
-            v_variables_sesion := true;
-            v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
-            lista_variables_rownumber.EXTEND;
-            lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
-          end if;
-          if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
-            v_variables_sesion := true;
-            v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
-            v_encontrado_var_row_number:=false;
-            if (lista_variables_rownumber.count > 0) then
-              for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-              loop
-                if (lista_variables_rownumber(indice_n) = v_row_number) then
-                  v_encontrado_var_row_number:=true;
-                end if;
-                
-              end loop;
-            end if;
-            if (v_encontrado_var_row_number = false) then
-              lista_variables_rownumber.EXTEND;
-              lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
-            end if;              
-          end if;
-          v_contador:=0;
-          select count(*) into v_contador from MTDT_TC_DETAIL where 
-          trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
-          TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
-          instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
-          if (v_contador > 0) then
-            v_variables_sesion := true;
-            for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
-            WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
-            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
-            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
-            loop
-              v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
-              v_encontrado_var_row_number:=false;
-              if (lista_variables_rownumber.count > 0) then
-                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-                loop
-                  if (lista_variables_rownumber(indx) = v_row_number) then
-                    v_encontrado_var_row_number:=true;
-                  end if;
-                end loop;
-              end if;
-              if (v_encontrado_var_row_number = false) then
-                lista_variables_rownumber.EXTEND;
-                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
-              end if;              
-            end loop;
-          end if;
-          
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
-          
-          --if (v_num_sce_EXISTENTES = 1) then
-            /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios del mismo tipo, en este caso EXISTENTE*/
-            --UTL_FILE.put_line(fich_salida_pkg,'CREATE TABLE IF NOT EXISTS ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_01 LIKE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
-            --UTL_FILE.put_line(fich_salida_pkg,'TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_01;');
-          --end if;
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ';');
-          UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
-          UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
-          UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
-          UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_upd INT;');
-          UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
-          UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_upd = 0;');
-          UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
-          if v_variables_sesion = true then
-              for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-              loop
-                UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
-              end loop;
-              UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
-          end if;
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
-          
-          --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION ureg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
-          --UTL_FILE.put_line(fich_salida_pkg, '  IS');
-          --UTL_FILE.put_line(fich_salida_pkg, '  num_filas_upd INTEGER;');
-          --UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio date := sysdate;');        
-          --UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
-          --UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg,'  INSERT');
-          UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
-          UTL_FILE.put_line(fich_salida_pkg,'  (');
-          open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          primera_col := 1;
-          loop
-            fetch MTDT_TC_DETAIL
-            into reg_detail;
-            exit when MTDT_TC_DETAIL%NOTFOUND;
-            if primera_col = 1 then
-              --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
-              primera_col := 0;
-            else
-              --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
-            end if;        
-          end loop;
-          close MTDT_TC_DETAIL;
-          UTL_FILE.put_line(fich_salida_pkg,'  )');
-          
-          dbms_output.put_line ('He pasado la parte del INTO');
-          /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
-          /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
-          /****/
-          UTL_FILE.put_line(fich_salida_pkg,'SELECT');
-          open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          primera_col := 1;
-          loop
-            fetch MTDT_TC_DETAIL
-            into reg_detail;
-            exit when MTDT_TC_DETAIL%NOTFOUND;
-            dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
-            columna := genera_campo_select (reg_detail);
-            if primera_col = 1 then
-              --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' ' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
-              primera_col := 0;
-            else
-              --UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' ' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
-            end if;        
-          end loop;
-          close MTDT_TC_DETAIL;
-          /****/
-          /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
-          /****/ 
-          /****/
-          /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
-          /****/
-          dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
-          UTL_FILE.put_line(fich_salida_pkg,'FROM');
-          /* (20170104) Angel Ruiz. Pueden aparecer Queries en TABLE_BASE_NAME */
-          if (regexp_instr (reg_scenario.TABLE_BASE_NAME,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
-            /* Tenemos una query en TABLE_BASE_NAME */
-            /* Es una query que posee un ALIAS */
-            v_alias_dim_table_base_name := trim(substr(REGEXP_SUBSTR (reg_scenario.TABLE_BASE_NAME, '\) *[a-zA-Z_0-9]+$'), 2));
-            --UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-            UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-          else
-            /* No hay una query en TABLE_BASE_NAME*/
-            /* COMPROBAMOS SI AUNQUE NO HAY QUERY, HAY UN ALIAS */
-            if (REGEXP_LIKE(trim(reg_scenario.TABLE_BASE_NAME), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
-              /* Hay un ALIAS */
-              v_alias_dim_table_base_name := trim(REGEXP_SUBSTR(TRIM(reg_scenario.TABLE_BASE_NAME), ' +[a-zA-Z_0-9]+$'));
-            else
-              v_alias_dim_table_base_name:=reg_scenario.TABLE_BASE_NAME;
-            end if;
-            --UTL_FILE.put_line(fich_salida_pkg, '    ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-            UTL_FILE.put_line(fich_salida_pkg, '    ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-          end if;
-          /* (20170104) Angel Ruiz. FIN. Pueden aparecer Queries en TABLE_BASE_NAME */
-          /* (20161205) Angel Ruiz. Dimensiones en BIG DATA */
-          dbms_output.put_line ('Interface COLUMNS: ' || reg_scenario.INTERFACE_COLUMNS);
-          dbms_output.put_line ('Table COLUMNS: ' || reg_scenario.TABLE_COLUMNS);
-          where_interface_columns := split_string_punto_coma (reg_scenario.INTERFACE_COLUMNS);
-          where_table_columns := split_string_punto_coma(reg_scenario.TABLE_COLUMNS);
-          dbms_output.put_line ('El numero de valores del Where interface es: ' || where_interface_columns.count);
-          dbms_output.put_line ('El numero de valores del Where interface es: ' || where_table_columns.count);
-    
-          IF (where_interface_columns.COUNT > 0  and 
-            where_table_columns.COUNT > 0 and 
-            where_interface_columns.COUNT = where_table_columns.COUNT) 
-          THEN
-            /****/
-            /* INICIO generacion parte  WHERE */
-            /****/    
-            --UTL_FILE.put_line(fich_salida_pkg, '    ' || 'WHERE ');
-            FOR indx IN where_interface_columns.FIRST .. where_interface_columns.LAST
-            LOOP
-              if indx = 1 then  /* (20161205) Angel Ruiz. Se trata del campo primero */
-                if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
-                  UTL_FILE.put_line(fich_salida_pkg,'  ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0) || ' = ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
-                else
-                  /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
-                  if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  else
-                    --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  end if;
-                  /* (20191219) Angel Ruiz. FIN */
-                
-                  --UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                end if;
-              else
-                /* (20160301) Angel Ruiz. NF: DECODE en campos */
-                if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
-                  UTL_FILE.put_line(fich_salida_pkg,'  AND ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0)  || ' = ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
-                else
-                  /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
-                  if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  else
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  end if;
-                  /* (20191219) Angel Ruiz. FIN */
-                
-                  --UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                end if;
-              end if;
-            END LOOP;
-            UTL_FILE.put_line(fich_salida_pkg, '        )');
-          END IF;
-
-          /* (20160630) Angel Ruiz. NF: Dimensiones sin funciones cache */
-          v_hay_look_up:='N';
-          if l_FROM.count > 0 then
-            FOR indx IN l_FROM.FIRST .. l_FROM.LAST
-            LOOP
-              UTL_FILE.put_line(fich_salida_pkg, '   ' || l_FROM(indx));
-              v_hay_look_up := 'Y';
-            END LOOP;
-          end if;
-          /* FIN */
-          dbms_output.put_line ('Despues del FROM');
-          
-          if (reg_scenario.FILTER is not null) then
-            UTL_FILE.put_line(fich_salida_pkg, 'WHERE ');
-            /* Añadimos el campo FILTER */
-            campo_filter := procesa_campo_filter(reg_scenario.FILTER);
-            UTL_FILE.put_line(fich_salida_pkg, '    ' || campo_filter);
-          end if;
-          UTL_FILE.put_line(fich_salida_pkg,'    ;');
-          UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_upd;');
-          UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_upd;');
-          UTL_FILE.put_line(fich_salida_pkg,'  END');
-          UTL_FILE.put_line(fich_salida_pkg,'  //');
-          UTL_FILE.put_line(fich_salida_pkg,'  DELIMITER ;');
-          
-          UTL_FILE.put_line(fich_salida_pkg, '');
-        end if;
-      end loop;
-      close MTDT_SCENARIO;
-
-      open MTDT_SCENARIO (reg_scenario.TABLE_NAME);
-      loop
-      fetch MTDT_SCENARIO
-      into reg_scenario;
-      exit when MTDT_SCENARIO%NOTFOUND;
-        /** COMIENZO  ESCENARIO HISTORICO **/
-        --if (reg_scenario.SCENARIO like 'H%')
-        if (reg_scenario.SCENARIO = 'H' or regexp_instr(reg_scenario.SCENARIO, '^H_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_H$') > 0)
-        then
-          /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
-          /* componentes del From y del Where */
-          l_FROM.delete;
-          l_WHERE.delete;
-          l_FROM_solo_tablas.delete;
-          lista_variables_rownumber.delete;
-          v_num_sce_HISTORICOS := v_num_sce_HISTORICOS + 1; /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios historicos */
-          
-          /* ESCENARIO HISTORICO */
-          dbms_output.put_line ('Estoy en el escenario: H');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO HISTORICO: ' || reg_scenario.SCENARIO || ' ###');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
-          v_variables_sesion := false;
-          if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
-            v_variables_sesion := true;
-            v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
-            lista_variables_rownumber.EXTEND;
-            lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
-          end if;
-          if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
-            v_variables_sesion := true;
-            v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
-            v_encontrado_var_row_number:=false;
-            if (lista_variables_rownumber.count > 0) then
-              for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-              loop
-                if (lista_variables_rownumber(indice_n) = v_row_number) then
-                  v_encontrado_var_row_number:=true;
-                end if;
-                
-              end loop;
-            end if;
-            if (v_encontrado_var_row_number = false) then
-              lista_variables_rownumber.EXTEND;
-              lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
-            end if;              
-          end if;
-          v_contador:=0;
-          select count(*) into v_contador from MTDT_TC_DETAIL where 
-          trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
-          TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
-          instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
-          if (v_contador > 0) then
-            v_variables_sesion := true;
-            for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
-            WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
-            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
-            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
-            loop
-              v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
-              v_encontrado_var_row_number:=false;
-              if (lista_variables_rownumber.count > 0) then
-                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-                loop
-                  if (lista_variables_rownumber(indx) = v_row_number) then
-                    v_encontrado_var_row_number:=true;
-                  end if;
-                end loop;
-              end if;
-              if (v_encontrado_var_row_number = false) then
-                lista_variables_rownumber.EXTEND;
-                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
-              end if;              
-            end loop;
-          end if;
-          
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
-          
-          --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION hst_reg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
-          --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION hreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
-          --UTL_FILE.put_line(fich_salida_pkg, '  IS');
-          --UTL_FILE.put_line(fich_salida_pkg, '  num_filas_hst INTEGER:=0;');
-          --UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio date := sysdate;');        
-          --UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
-          --UTL_FILE.put_line(fich_salida_pkg, '');
-          --if (v_num_sce_HISTORICOS = 1) then
-            --UTL_FILE.put_line(fich_salida_pkg,'CREATE TABLE IF NOT EXISTS ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_02 LIKE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
-            --UTL_FILE.put_line(fich_salida_pkg,'TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_02;');
-          --end if;
-          --UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.hreg_' || nombre_proceso || ';');
-          UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ';');
-          UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
-          --UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.hreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR(8), fch_datos_in IN VARCHAR(8)) return DECIMAL');
-          UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
-          UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
-          UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_hst INT;');
-          UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
-          UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_hst = 0;');
-          UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
-          if v_variables_sesion = true then
-              for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
-              loop
-                UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
-              end loop;
-              UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
-          end if;
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
-          
-          UTL_FILE.put_line(fich_salida_pkg, '');
-          UTL_FILE.put_line(fich_salida_pkg, '  INSERT');
-          UTL_FILE.put_line(fich_salida_pkg, '  INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
-          /* parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
-          --UTL_FILE.put_line(fich_salida_pkg,'    (');
-          --open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          --primera_col := 1;
-          --loop
-            --fetch MTDT_TC_DETAIL
-            --into reg_detail;
-            --exit when MTDT_TC_DETAIL%NOTFOUND;
-            --dbms_output.put_line ('Estoy en el Tercer Loop. El campo es: ' || reg_detail.TABLE_COLUMN);
-            --if primera_col = 1 then
-              --UTL_FILE.put_line(fich_salida_pkg, '    ' || reg_detail.TABLE_COLUMN);
-              --primera_col := 0;
-            --else
-              --UTL_FILE.put_line(fich_salida_pkg,'    ,' || reg_detail.TABLE_COLUMN);
-            --end if;
-          --end loop;
-          --close MTDT_TC_DETAIL;
-          --UTL_FILE.put_line(fich_salida_pkg,'    )');
-          UTL_FILE.put_line(fich_salida_pkg,'  (');
-          open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          primera_col := 1;
-          loop
-            fetch MTDT_TC_DETAIL
-            into reg_detail;
-            exit when MTDT_TC_DETAIL%NOTFOUND;
-            if primera_col = 1 then
-              --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
-              primera_col := 0;
-            else
-              --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
-            end if;        
-          end loop;
-          close MTDT_TC_DETAIL;
-          UTL_FILE.put_line(fich_salida_pkg,'  )');
-          
-          dbms_output.put_line ('He pasado la parte del INTO');
-          /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
-          /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
-          /****/
-          UTL_FILE.put_line(fich_salida_pkg,'SELECT');
-          open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
-          primera_col := 1;
-          loop
-            fetch MTDT_TC_DETAIL
-            into reg_detail;
-            exit when MTDT_TC_DETAIL%NOTFOUND;
-            dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
-            columna := genera_campo_select (reg_detail);
-            if primera_col = 1 then
-              --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' ' || reg_detail.TABLE_COLUMN);
-              UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
-              primera_col := 0;
-            else
-              UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
-            end if;        
-          end loop;
-          close MTDT_TC_DETAIL;
-          /****/
-          /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
-          /****/ 
-          /****/
-          /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
-          /****/
-          dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
-          UTL_FILE.put_line(fich_salida_pkg,'FROM');
-          /* (20170104) Angel Ruiz. Pueden aparecer Queries en TABLE_BASE_NAME */
-          if (regexp_instr (reg_scenario.TABLE_BASE_NAME,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
-            /* Tenemos una query en TABLE_BASE_NAME */
-            /* Es una query que posee un ALIAS */
-            v_alias_dim_table_base_name := trim(substr(REGEXP_SUBSTR (reg_scenario.TABLE_BASE_NAME, '\) *[a-zA-Z_0-9]+$'), 2));
-            UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' RIGHT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-          else
-            /* No hay una query en TABLE_BASE_NAME*/
-            /* COMPROBAMOS SI AUNQUE NO HAY QUERY, HAY UN ALIAS */
-            if (REGEXP_LIKE(trim(reg_scenario.TABLE_BASE_NAME), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
-              /* Hay un ALIAS */
-              v_alias_dim_table_base_name := trim(REGEXP_SUBSTR(TRIM(reg_scenario.TABLE_BASE_NAME), ' +[a-zA-Z_0-9]+$'));
-            else
-              v_alias_dim_table_base_name:=reg_scenario.TABLE_BASE_NAME;
-            end if;
-            UTL_FILE.put_line(fich_salida_pkg, '  ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' RIGHT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
-          end if;
-          /* (20170104) Angel Ruiz. FIN. Pueden aparecer Queries en TABLE_BASE_NAME */
-          /* (20161106) Angel Ruiz. Se trata de formar la clausula ON del RIGHT OUTER JOIN, ya que estamos en el escenario Historico */
-          dbms_output.put_line ('Interface COLUMNS: ' || reg_scenario.INTERFACE_COLUMNS);
-          dbms_output.put_line ('Table COLUMNS: ' || reg_scenario.TABLE_COLUMNS);
-          where_interface_columns := split_string_punto_coma (reg_scenario.INTERFACE_COLUMNS);
-          where_table_columns := split_string_punto_coma(reg_scenario.TABLE_COLUMNS);
-          dbms_output.put_line ('El numero de valores del Where interface es: ' || where_interface_columns.count);
-          dbms_output.put_line ('El numero de valores del Where interface es: ' || where_table_columns.count);
-    
-          IF (where_interface_columns.COUNT > 0  and 
-            where_table_columns.COUNT > 0 and 
-            where_interface_columns.COUNT = where_table_columns.COUNT) 
-          THEN
-            /****/
-            /* INICIO generacion parte  WHERE */
-            /****/    
-            --UTL_FILE.put_line(fich_salida_pkg, '    ' || 'WHERE ');
-            /* Procesamos el campo FILTER . Lo añado a posteriori en la recta final (20141126*/
-            FOR indx IN where_interface_columns.FIRST .. where_interface_columns.LAST
-            LOOP
-              /* (20160301) Angel Ruiz. NF: DECODE en campos */
-              if (indx = 1) then /* (20161106. Angel Ruiz. Se trata del primer elemento del ON */
-                if (instr(where_table_columns(indx), 'DECODE') > 0 or instr(where_table_columns(indx), 'decode') > 0) then
-                  UTL_FILE.put_line(fich_salida_pkg,'    ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0) || ' = ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0));
-                else
-                  /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
-                  if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  else
-                    --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
-                    UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  end if;
-                  /* (20191219) Angel Ruiz. FIN */
-                
-                  --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx) || ' = ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx));
-                end if;
-              else
-                if (instr(where_table_columns(indx), 'DECODE') > 0 or instr(where_table_columns(indx), 'decode') > 0) then
-                  UTL_FILE.put_line(fich_salida_pkg,'  AND ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0) || ' = ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0));
-                else
-                  /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
-                  if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
-                  else
-                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
-                  end if;
-                  /* (20191219) Angel Ruiz. FIN */
-
-                  --UTL_FILE.put_line(fich_salida_pkg,'  AND ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx) || ' = ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx));
-                end if;
-              end if;
-            END LOOP;
-            UTL_FILE.put_line(fich_salida_pkg, '    )');
-            --UTL_FILE.put_line(fich_salida_pkg, '    AND ' || reg_scenario.TABLE_BASE_NAME || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL)' );
-          END IF;
-          
-          /* (20160630) Angel Ruiz. NF: Dimensiones sin funciones cache */
-          v_hay_look_up:='N';
-          if l_FROM.count > 0 then
-            FOR indx IN l_FROM.FIRST .. l_FROM.LAST
-            LOOP
-              UTL_FILE.put_line(fich_salida_pkg, '   ' || l_FROM(indx));
-              v_hay_look_up := 'Y';
-            END LOOP;
-          end if;
-          /* FIN */
-          dbms_output.put_line ('Despues del FROM');
-          UTL_FILE.put_line(fich_salida_pkg, '  WHERE ');
-          --UTL_FILE.put_line(fich_salida_pkg, '    ' || v_alias_dim_table_base_name || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL' );
-          if (reg_scenario.FILTER is not null) then
-            /* Anadimos el campo FILTER */
-            campo_filter := procesa_campo_filter(reg_scenario.FILTER);
-            --UTL_FILE.put_line(fich_salida_pkg, '    AND ' || campo_filter);
-            UTL_FILE.put_line(fich_salida_pkg, '      ' || campo_filter);
-            UTL_FILE.put_line(fich_salida_pkg, '  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL' );
-          else
-            UTL_FILE.put_line(fich_salida_pkg, '  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL' );
-          end if;
-          UTL_FILE.put_line(fich_salida_pkg,'  ;');
-          UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_hst;');
-          
-          --UTL_FILE.put_line(fich_salida_pkg,'    num_filas_hst := sql%rowcount;');
-    
-    /**************************************************/
-          /* (20150114) Angel Ruiz . VIENE LA PARTE RECIENTE PARA PROCESAR SI LA DIMENSION POSEE CARGA MANUAL INICIAL */
-          /* Comprobamos que la Dimension no tiene carga inicial manual */
-          if (reg_scenario.FILTER_CARGA_INI is not null) then
-            /* Si hay un valor en este campo, es que la dimension posee registros cargados al margen de las cargas por interfaz */
-            /* Con lo que haY que cargarlos en T_* para que no se pierdan */
-            /* al margen de la logica normal de carga de la dimension */
+            v_hay_regla_seq:=false;
+            v_num_sce_NUEVOS := v_num_sce_NUEVOS + 1; /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios nuevos */
+            /* ESCENARIO NUEVO */
+            dbms_output.put_line ('Estoy en el escenario: ' || reg_scenario.SCENARIO);
+            --UTL_FILE.put_line(fich_salida_pkg,'');
+            --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION new_reg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
+            --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION nreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
+            --UTL_FILE.put_line(fich_salida_pkg, '  IS');
+            --UTL_FILE.put_line(fich_salida_pkg, '  num_filas_insertadas INTEGER;');
+            --UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio date := sysdate;');
+            --UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
             UTL_FILE.put_line(fich_salida_pkg, '');
-            UTL_FILE.put_line(fich_salida_pkg,'INSERT');
-            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
+            UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO NUEVO: ' || reg_scenario.SCENARIO || ' ###');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            v_variables_sesion := false;
+            if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
+              lista_variables_rownumber.EXTEND;
+              lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
+            end if;
+            if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
+              v_encontrado_var_row_number:=false;
+              if (lista_variables_rownumber.count > 0) then
+                for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  if (lista_variables_rownumber(indice_n) = v_row_number) then
+                    v_encontrado_var_row_number:=true;
+                  end if;
+                  
+                end loop;
+              end if;
+              if (v_encontrado_var_row_number = false) then
+                lista_variables_rownumber.EXTEND;
+                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+              end if;              
+            end if;
+            v_contador:=0;
+            select count(*) into v_contador from MTDT_TC_DETAIL where 
+            trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
+            if (v_contador > 0) then
+              v_variables_sesion := true;
+              for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
+              WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+              TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+              instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
+              loop
+                v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
+                v_encontrado_var_row_number:=false;
+                if (lista_variables_rownumber.count > 0) then
+                  for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                  loop
+                    if (lista_variables_rownumber(indx) = v_row_number) then
+                      v_encontrado_var_row_number:=true;
+                    end if;
+                  end loop;
+                end if;
+                if (v_encontrado_var_row_number = false) then
+                  lista_variables_rownumber.EXTEND;
+                  lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+                end if;              
+              end loop;
+            end if;
+            
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            
+            --if (v_num_sce_NUEVOS = 1) then
+              /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios del mismo tipo, en este caso NUEVO*/
+              --UTL_FILE.put_line (fich_salida_pkg, 'TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
+            --end if;
+            --UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.nreg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
+            --UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.nreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR(8), fch_datos_in IN VARCHAR(8)) return DECIMAL');
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_insertadas INT;');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_insertadas = 0;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            if v_variables_sesion = true then
+                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
+                end loop;
+                UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
+            end if;
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            UTL_FILE.put_line(fich_salida_pkg,'  INSERT');
+            UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
+            UTL_FILE.put_line(fich_salida_pkg,'  (');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+              if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+                if primera_col = 1 then
+                  --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
+                  UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
+                  primera_col := 0;
+                else
+                  --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
+                  UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
+                end if;
+              end if;
+              /* (20200303) Angel Ruiz. FIN NF: Nueva regla AUTO para no tener que usar las secuencias*/
+            end loop;
+            close MTDT_TC_DETAIL;
+            UTL_FILE.put_line(fich_salida_pkg,'  )');
+            dbms_output.put_line ('He pasado la parte del INTO');
+            /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+            /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            UTL_FILE.put_line(fich_salida_pkg,'  SELECT');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+              if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+                dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
+                columna := genera_campo_select (reg_detail);
+                if primera_col = 1 then
+                  --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' ' || reg_detail.TABLE_COLUMN);
+                  UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                  primera_col := 0;
+                else
+                  --UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' ' || reg_detail.TABLE_COLUMN);
+                  UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                end if;
+              end if;
+              /* (20200303) Angel Ruiz. FIN NF: Nueva regla AUTO para no tener que usar las secuencias*/
+            end loop;
+            close MTDT_TC_DETAIL;
+            /****/
+            /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/ 
+            /****/
+            /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
+            /****/
+            dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
+            UTL_FILE.put_line(fich_salida_pkg,'  FROM');
+            /* (20170104) Angel Ruiz. Pueden aparecer Queries en TABLE_BASE_NAME */
+            if (regexp_instr (reg_scenario.TABLE_BASE_NAME,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
+              /* Tenemos una query en TABLE_BASE_NAME */
+              /* Es una query que posee un ALIAS */
+              v_alias_dim_table_base_name := trim(substr(REGEXP_SUBSTR (reg_scenario.TABLE_BASE_NAME, '\) *[a-zA-Z_0-9]+$'), 2));
+              --UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' LEFT OUTER JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+              UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' LEFT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+            else
+              /* No hay una query en TABLE_BASE_NAME*/
+              /* COMPROBAMOS SI AUNQUE NO HAY QUERY, HAY UN ALIAS */
+              if (REGEXP_LIKE(trim(reg_scenario.TABLE_BASE_NAME), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
+                /* Hay un ALIAS */
+                v_alias_dim_table_base_name := trim(REGEXP_SUBSTR(TRIM(reg_scenario.TABLE_BASE_NAME), ' +[a-zA-Z_0-9]+$'));
+              else
+                v_alias_dim_table_base_name:=reg_scenario.TABLE_BASE_NAME;
+              end if;
+              --UTL_FILE.put_line(fich_salida_pkg, '  ' || NAME_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' LEFT OUTER JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+              UTL_FILE.put_line(fich_salida_pkg, '  ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' LEFT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+            end if;
+            /* (20170104) Angel Ruiz. FIN. Pueden aparecer Queries en TABLE_BASE_NAME */
+            dbms_output.put_line ('Interface COLUMNS: ' || reg_scenario.INTERFACE_COLUMNS);
+            dbms_output.put_line ('Table COLUMNS: ' || reg_scenario.TABLE_COLUMNS);
+            where_interface_columns := split_string_punto_coma (reg_scenario.INTERFACE_COLUMNS);
+            where_table_columns := split_string_punto_coma(reg_scenario.TABLE_COLUMNS);
+            dbms_output.put_line ('El numero de valores del Where interface es: ' || where_interface_columns.count);
+            dbms_output.put_line ('El numero de valores del Where interface es: ' || where_table_columns.count);
+            /* (20161205) Angel Ruiz. Generacion de Dimensiones BIG DATA */
+            IF (where_interface_columns.COUNT > 0  and 
+              where_table_columns.COUNT > 0 and 
+              where_interface_columns.COUNT = where_table_columns.COUNT) 
+            THEN
+              /****/
+              /* INICIO generacion parte  WHERE */
+              /****/    
+              --UTL_FILE.put_line(fich_salida_pkg, '    ' || 'WHERE ');
+              /* Procesamos el campo FILTER . Lo añado a posteriori en la recta final (20141126*/
+              FOR indx IN where_interface_columns.FIRST .. where_interface_columns.LAST
+              LOOP
+                if indx = 1 then  /* Se trata del primer elemento */
+                  /* (20160301) Angel Ruiz. NF: DECODE en campos */
+                  if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
+                    --UTL_FILE.put_line(fich_salida_pkg,'    ' || transformo_decode(where_interface_columns(indx), reg_detail.TABLE_BASE_NAME, 0) || ' = ' || transformo_decode(where_table_columns(indx), reg_detail.TABLE_NAME, 0));
+                    UTL_FILE.put_line(fich_salida_pkg,'  ' || transformo_decode(where_interface_columns(indx), v_alias_dim_table_base_name, 0) || ' = ' || transformo_decode(where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
+                  else
+                    /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
+                    if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    else
+                      --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    end if;
+                    /* (20191219) Angel Ruiz. FIN */
+                  
+                    --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
+                    --UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                  end if;
+                else
+                  if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
+                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || transformo_decode(where_interface_columns(indx), v_alias_dim_table_base_name, 0) || ' = ' || transformo_decode(where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
+                  else
+                    /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
+                    if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    else
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    end if;
+                    /* (20191219) Angel Ruiz. FIN */
+                  
+                    --UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                  end if;
+                end if;
+              END LOOP;
+              UTL_FILE.put_line (fich_salida_pkg,'    )');
+            end if;
+            /* (20160630) Angel Ruiz. NF: Dimensiones sin funciones cache, es decir, con JOINS */
+            v_hay_look_up:='N';
+            if l_FROM.count > 0 then
+              FOR indx IN l_FROM.FIRST .. l_FROM.LAST
+              LOOP
+                UTL_FILE.put_line(fich_salida_pkg, '   ' || l_FROM(indx));
+                v_hay_look_up := 'Y';
+              END LOOP;
+            end if;
+            /* FIN */
+            dbms_output.put_line ('Despues del FROM');
+            UTL_FILE.put_line(fich_salida_pkg, '  WHERE ');
+            if (reg_scenario.FILTER is not null) then
+              /* Añadimos el campo FILTER */
+              campo_filter := procesa_campo_filter(reg_scenario.FILTER);
+              --UTL_FILE.put_line(fich_salida_pkg, '    AND ' || campo_filter || ';');
+              UTL_FILE.put_line(fich_salida_pkg, '      ' || campo_filter );
+              UTL_FILE.put_line(fich_salida_pkg, '  AND '  || reg_scenario.TABLE_NAME || '.' || where_table_columns ( where_table_columns.FIRST) || ' IS NULL');
+            else
+              UTL_FILE.put_line(fich_salida_pkg, '      '  || reg_scenario.TABLE_NAME || '.' || where_table_columns ( where_table_columns.FIRST) || ' IS NULL');
+            end if;
+            
+            UTL_FILE.put_line(fich_salida_pkg,'  ;');
+            UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_insertadas;');
+            UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
+            UTL_FILE.put_line(fich_salida_pkg,'  END');
+            UTL_FILE.put_line(fich_salida_pkg,'  //');
+            UTL_FILE.put_line(fich_salida_pkg,'  DELIMITER ;');
+            --UTL_FILE.put_line(fich_salida_pkg,'    num_filas_insertadas := sql%rowcount;');
+            --UTL_FILE.put_line(fich_salida_pkg,'    commit;');
+            --UTL_FILE.put_line(fich_salida_pkg,'    RETURN num_filas_insertadas;');
+            
+            --UTL_FILE.put_line(fich_salida_pkg,'    exception');
+            --UTL_FILE.put_line(fich_salida_pkg,'    when NO_DATA_FOUND then');
+            --UTL_FILE.put_line(fich_salida_pkg,'      return sql%rowcount;');
+            --UTL_FILE.put_line(fich_salida_pkg,'    when OTHERS then');
+            --UTL_FILE.put_line(fich_salida_pkg,'      dbms_output.put_line (''Se ha producido un error al insertar los nuevos registros.'');');
+            --UTL_FILE.put_line(fich_salida_pkg,'      dbms_output.put_line (''Error code: '' || sqlcode || ''. Mensaje: '' || sqlerrm);');
+            --UTL_FILE.put_line(fich_salida_pkg,'      rollback;');
+            --UTL_FILE.put_line(fich_salida_pkg,'      RAISE;');
+            --UTL_FILE.put_line(fich_salida_pkg,'      return sqlcode;');
+            --UTL_FILE.put_line(fich_salida_pkg,'  END new_reg_' || reg_scenario.TABLE_NAME || ';');
+            --UTL_FILE.put_line(fich_salida_pkg,'  END nreg_' || nombre_proceso || ';');
+            --UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20170110) Angel Ruiz. Implemento la parte que tiene que ver con SEQ. */
+            /* Hay que modificar el valor de la tabla del metadato MTDT_SEQUENCIAS */
+            /*(20170107) Angel Ruiz. NF.: Reglas SEQ */
+            --if (v_hay_regla_seq = true) then
+              /* Controlo el valor maximo de la secuencia */
+              /* MODIFICANDO DICHO VALOR EN LA TABLA DEL METADATO relativa las secuencias */
+              --dbms_output.put_line ('-- Modifico el valor maximo de la secuencia');
+              /* (20170608) Angel Ruiz. BUG. Se corrige un BUG que hace que si se carga dos veces el mismo fichero */
+              /* al calcular el ultimo valor de la secuencia no funcione OK */
+              --UTL_FILE.put_line(fich_salida_pkg, 'DELETE FROM ' || OWNER_MTDT || '.MTDT_SEQUENCIAS WHERE ID_SEQ='''|| v_nombre_seq || ''';');
+              --UTL_FILE.put_line(fich_salida_pkg, 'INSERT INTO ' || OWNER_MTDT || '.MTDT_SEQUENCIAS SELECT '''|| v_nombre_seq || ''', NVL(MAX(' || v_nombre_campo_seq || '), 0) from ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
+              --UTL_FILE.put_line(fich_salida_pkg, '');
+              --UTL_FILE.put_line(fich_salida_pkg, '-- GESTION DE LA SECUENCIA');
+              --UTL_FILE.put_line(fich_salida_pkg, '-- Borro la secuencia de la tabla de secuencias si y solo si la tabla temporal posee filas');
+              --UTL_FILE.put_line(fich_salida_pkg, 'DELETE FROM ' || OWNER_MTDT || '.MTDT_SEQUENCIAS WHERE ID_SEQ IN (SELECT '''|| v_nombre_seq || ''' FROM ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ' TABLESAMPLE (1 ROWS));');
+              --UTL_FILE.put_line(fich_salida_pkg, '-- inserto el nuevo valor de la secuencia si y solo si la tabla temporal posee filas');
+              --UTL_FILE.put_line(fich_salida_pkg, 'INSERT INTO ' || OWNER_MTDT || '.MTDT_SEQUENCIAS');
+              --UTL_FILE.put_line(fich_salida_pkg, 'SELECT '''|| v_nombre_seq || ''', MAX_T_' || nombre_tabla_reducido || '.MAXIMO ');
+              --UTL_FILE.put_line(fich_salida_pkg, 'FROM');
+              --UTL_FILE.put_line(fich_salida_pkg, '(SELECT MAX(' || v_nombre_campo_seq || ') AS MAXIMO FROM ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ') MAX_T_' || nombre_tabla_reducido);
+              --UTL_FILE.put_line(fich_salida_pkg, 'WHERE MAX_T_' || nombre_tabla_reducido || '.MAXIMO IS NOT NULL;');
+              --v_hay_regla_seq:=false;
+            --end if;
+        
+  
+        /** COMIENZO  ESCENARIO EXISTENTE **/
+  
+          --if (reg_scenario.SCENARIO like 'E%')
+          elsif (reg_scenario.SCENARIO = 'E' or regexp_instr(reg_scenario.SCENARIO, '^E_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_E$') > 0)
+          then
+            /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
+            /* componentes del From y del Where */
+            l_FROM.delete;
+            l_WHERE.delete;
+            l_FROM_solo_tablas.delete;
+            lista_variables_rownumber.delete;
+            v_num_sce_EXISTENTES := v_num_sce_EXISTENTES + 1; /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios existentes */
+            
+            /* ESCENARIO EXISTENTE */
+            dbms_output.put_line ('Estoy en el escenario: E');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO EXISTENTE: ' || reg_scenario.SCENARIO || ' ###');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            v_variables_sesion := false;
+            if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
+              lista_variables_rownumber.EXTEND;
+              lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
+            end if;
+            if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
+              v_encontrado_var_row_number:=false;
+              if (lista_variables_rownumber.count > 0) then
+                for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  if (lista_variables_rownumber(indice_n) = v_row_number) then
+                    v_encontrado_var_row_number:=true;
+                  end if;
+                  
+                end loop;
+              end if;
+              if (v_encontrado_var_row_number = false) then
+                lista_variables_rownumber.EXTEND;
+                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+              end if;              
+            end if;
+            v_contador:=0;
+            select count(*) into v_contador from MTDT_TC_DETAIL where 
+            trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
+            if (v_contador > 0) then
+              v_variables_sesion := true;
+              for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
+              WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+              TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+              instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
+              loop
+                v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
+                v_encontrado_var_row_number:=false;
+                if (lista_variables_rownumber.count > 0) then
+                  for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                  loop
+                    if (lista_variables_rownumber(indx) = v_row_number) then
+                      v_encontrado_var_row_number:=true;
+                    end if;
+                  end loop;
+                end if;
+                if (v_encontrado_var_row_number = false) then
+                  lista_variables_rownumber.EXTEND;
+                  lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+                end if;              
+              end loop;
+            end if;
+            
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            --if (v_num_sce_EXISTENTES = 1) then
+              /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios del mismo tipo, en este caso EXISTENTE*/
+              --UTL_FILE.put_line(fich_salida_pkg,'CREATE TABLE IF NOT EXISTS ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_01 LIKE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
+              --UTL_FILE.put_line(fich_salida_pkg,'TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_01;');
+            --end if;
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_upd INT;');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_upd = 0;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            if v_variables_sesion = true then
+                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
+                end loop;
+                UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
+            end if;
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION ureg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
+            --UTL_FILE.put_line(fich_salida_pkg, '  IS');
+            --UTL_FILE.put_line(fich_salida_pkg, '  num_filas_upd INTEGER;');
+            --UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio date := sysdate;');        
+            --UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
+            --UTL_FILE.put_line(fich_salida_pkg, '');
+            UTL_FILE.put_line(fich_salida_pkg,'  INSERT');
+            UTL_FILE.put_line(fich_salida_pkg,'  INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
             UTL_FILE.put_line(fich_salida_pkg,'  (');
             open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
             primera_col := 1;
@@ -4379,7 +3918,7 @@ begin
               exit when MTDT_TC_DETAIL%NOTFOUND;
               if primera_col = 1 then
                 --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
-                UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '´');
+                UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
                 primera_col := 0;
               else
                 --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
@@ -4388,7 +3927,255 @@ begin
             end loop;
             close MTDT_TC_DETAIL;
             UTL_FILE.put_line(fich_salida_pkg,'  )');
-           
+            
+            dbms_output.put_line ('He pasado la parte del INTO');
+            /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+            /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            UTL_FILE.put_line(fich_salida_pkg,'SELECT');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
+              columna := genera_campo_select (reg_detail);
+              if primera_col = 1 then
+                --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' ' || reg_detail.TABLE_COLUMN);
+                UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                primera_col := 0;
+              else
+                --UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' ' || reg_detail.TABLE_COLUMN);
+                UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+              end if;        
+            end loop;
+            close MTDT_TC_DETAIL;
+            /****/
+            /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/ 
+            /****/
+            /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
+            /****/
+            dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
+            UTL_FILE.put_line(fich_salida_pkg,'FROM');
+            /* (20170104) Angel Ruiz. Pueden aparecer Queries en TABLE_BASE_NAME */
+            if (regexp_instr (reg_scenario.TABLE_BASE_NAME,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
+              /* Tenemos una query en TABLE_BASE_NAME */
+              /* Es una query que posee un ALIAS */
+              v_alias_dim_table_base_name := trim(substr(REGEXP_SUBSTR (reg_scenario.TABLE_BASE_NAME, '\) *[a-zA-Z_0-9]+$'), 2));
+              --UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+              UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+            else
+              /* No hay una query en TABLE_BASE_NAME*/
+              /* COMPROBAMOS SI AUNQUE NO HAY QUERY, HAY UN ALIAS */
+              if (REGEXP_LIKE(trim(reg_scenario.TABLE_BASE_NAME), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
+                /* Hay un ALIAS */
+                v_alias_dim_table_base_name := trim(REGEXP_SUBSTR(TRIM(reg_scenario.TABLE_BASE_NAME), ' +[a-zA-Z_0-9]+$'));
+              else
+                v_alias_dim_table_base_name:=reg_scenario.TABLE_BASE_NAME;
+              end if;
+              --UTL_FILE.put_line(fich_salida_pkg, '    ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' JOIN ' || OWNER_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+              UTL_FILE.put_line(fich_salida_pkg, '    ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+            end if;
+            /* (20170104) Angel Ruiz. FIN. Pueden aparecer Queries en TABLE_BASE_NAME */
+            /* (20161205) Angel Ruiz. Dimensiones en BIG DATA */
+            dbms_output.put_line ('Interface COLUMNS: ' || reg_scenario.INTERFACE_COLUMNS);
+            dbms_output.put_line ('Table COLUMNS: ' || reg_scenario.TABLE_COLUMNS);
+            where_interface_columns := split_string_punto_coma (reg_scenario.INTERFACE_COLUMNS);
+            where_table_columns := split_string_punto_coma(reg_scenario.TABLE_COLUMNS);
+            dbms_output.put_line ('El numero de valores del Where interface es: ' || where_interface_columns.count);
+            dbms_output.put_line ('El numero de valores del Where interface es: ' || where_table_columns.count);
+      
+            IF (where_interface_columns.COUNT > 0  and 
+              where_table_columns.COUNT > 0 and 
+              where_interface_columns.COUNT = where_table_columns.COUNT) 
+            THEN
+              /****/
+              /* INICIO generacion parte  WHERE */
+              /****/    
+              --UTL_FILE.put_line(fich_salida_pkg, '    ' || 'WHERE ');
+              FOR indx IN where_interface_columns.FIRST .. where_interface_columns.LAST
+              LOOP
+                if indx = 1 then  /* (20161205) Angel Ruiz. Se trata del campo primero */
+                  if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
+                    UTL_FILE.put_line(fich_salida_pkg,'  ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0) || ' = ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
+                  else
+                    /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
+                    if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    else
+                      --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    end if;
+                    /* (20191219) Angel Ruiz. FIN */
+                  
+                    --UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                  end if;
+                else
+                  /* (20160301) Angel Ruiz. NF: DECODE en campos */
+                  if (regexp_instr(where_table_columns(indx), '[Dd][Ee][Cc][Oo][Dd][Ee]') > 0 ) then
+                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0)  || ' = ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0));
+                  else
+                    /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
+                    if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    else
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    end if;
+                    /* (20191219) Angel Ruiz. FIN */
+                  
+                    --UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                  end if;
+                end if;
+              END LOOP;
+              UTL_FILE.put_line(fich_salida_pkg, '        )');
+            END IF;
+  
+            /* (20160630) Angel Ruiz. NF: Dimensiones sin funciones cache */
+            v_hay_look_up:='N';
+            if l_FROM.count > 0 then
+              FOR indx IN l_FROM.FIRST .. l_FROM.LAST
+              LOOP
+                UTL_FILE.put_line(fich_salida_pkg, '   ' || l_FROM(indx));
+                v_hay_look_up := 'Y';
+              END LOOP;
+            end if;
+            /* FIN */
+            dbms_output.put_line ('Despues del FROM');
+            
+            if (reg_scenario.FILTER is not null) then
+              UTL_FILE.put_line(fich_salida_pkg, 'WHERE ');
+              /* Añadimos el campo FILTER */
+              campo_filter := procesa_campo_filter(reg_scenario.FILTER);
+              UTL_FILE.put_line(fich_salida_pkg, '    ' || campo_filter);
+            end if;
+            UTL_FILE.put_line(fich_salida_pkg,'    ;');
+            UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_upd;');
+            UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_upd;');
+            UTL_FILE.put_line(fich_salida_pkg,'  END');
+            UTL_FILE.put_line(fich_salida_pkg,'  //');
+            UTL_FILE.put_line(fich_salida_pkg,'  DELIMITER ;');
+            
+            UTL_FILE.put_line(fich_salida_pkg, '');
+  
+          /** COMIENZO  ESCENARIO HISTORICO **/
+          --if (reg_scenario.SCENARIO like 'H%')
+          elsif (reg_scenario.SCENARIO = 'H' or regexp_instr(reg_scenario.SCENARIO, '^H_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_H$') > 0)
+          then
+            /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
+            /* componentes del From y del Where */
+            l_FROM.delete;
+            l_WHERE.delete;
+            l_FROM_solo_tablas.delete;
+            lista_variables_rownumber.delete;
+            v_num_sce_HISTORICOS := v_num_sce_HISTORICOS + 1; /* (20170315) Angel Ruiz. NF: Pueden venir varios escenarios historicos */
+            
+            /* ESCENARIO HISTORICO */
+            dbms_output.put_line ('Estoy en el escenario: H');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO HISTORICO: ' || reg_scenario.SCENARIO || ' ###');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            v_variables_sesion := false;
+            if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
+              lista_variables_rownumber.EXTEND;
+              lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
+            end if;
+            if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
+              v_encontrado_var_row_number:=false;
+              if (lista_variables_rownumber.count > 0) then
+                for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  if (lista_variables_rownumber(indice_n) = v_row_number) then
+                    v_encontrado_var_row_number:=true;
+                  end if;
+                  
+                end loop;
+              end if;
+              if (v_encontrado_var_row_number = false) then
+                lista_variables_rownumber.EXTEND;
+                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+              end if;              
+            end if;
+            v_contador:=0;
+            select count(*) into v_contador from MTDT_TC_DETAIL where 
+            trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
+            if (v_contador > 0) then
+              v_variables_sesion := true;
+              for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
+              WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+              TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+              instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
+              loop
+                v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
+                v_encontrado_var_row_number:=false;
+                if (lista_variables_rownumber.count > 0) then
+                  for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                  loop
+                    if (lista_variables_rownumber(indx) = v_row_number) then
+                      v_encontrado_var_row_number:=true;
+                    end if;
+                  end loop;
+                end if;
+                if (v_encontrado_var_row_number = false) then
+                  lista_variables_rownumber.EXTEND;
+                  lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+                end if;              
+              end loop;
+            end if;
+            
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION hst_reg_' || reg_scenario.TABLE_NAME || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
+            --UTL_FILE.put_line(fich_salida_pkg, '  FUNCTION hreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2) return NUMBER');
+            --UTL_FILE.put_line(fich_salida_pkg, '  IS');
+            --UTL_FILE.put_line(fich_salida_pkg, '  num_filas_hst INTEGER:=0;');
+            --UTL_FILE.put_line(fich_salida_pkg, '  var_fch_inicio date := sysdate;');        
+            --UTL_FILE.put_line(fich_salida_pkg, '  BEGIN');
+            --UTL_FILE.put_line(fich_salida_pkg, '');
+            --if (v_num_sce_HISTORICOS = 1) then
+              --UTL_FILE.put_line(fich_salida_pkg,'CREATE TABLE IF NOT EXISTS ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_02 LIKE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
+              --UTL_FILE.put_line(fich_salida_pkg,'TRUNCATE TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || '_02;');
+            --end if;
+            --UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.hreg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
+            --UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.hreg_' || nombre_proceso || ' (fch_carga_in IN VARCHAR(8), fch_datos_in IN VARCHAR(8)) return DECIMAL');
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || ESQUEMA_DM || '.' || reg_scenario.SCENARIO || '_reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_hst INT;');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_hst = 0;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            if v_variables_sesion = true then
+                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
+                end loop;
+                UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
+            end if;
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            UTL_FILE.put_line(fich_salida_pkg, '  INSERT');
+            UTL_FILE.put_line(fich_salida_pkg, '  INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
             /* parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
             --UTL_FILE.put_line(fich_salida_pkg,'    (');
             --open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
@@ -4407,6 +4194,24 @@ begin
             --end loop;
             --close MTDT_TC_DETAIL;
             --UTL_FILE.put_line(fich_salida_pkg,'    )');
+            UTL_FILE.put_line(fich_salida_pkg,'  (');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              if primera_col = 1 then
+                --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
+                UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
+                primera_col := 0;
+              else
+                --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
+                UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
+              end if;        
+            end loop;
+            close MTDT_TC_DETAIL;
+            UTL_FILE.put_line(fich_salida_pkg,'  )');
             
             dbms_output.put_line ('He pasado la parte del INTO');
             /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
@@ -4422,12 +4227,11 @@ begin
               dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
               columna := genera_campo_select (reg_detail);
               if primera_col = 1 then
-                --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna);
-                UTL_FILE.put_line(fich_salida_pkg, '  `' || columna || '`');
+                --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' ' || reg_detail.TABLE_COLUMN);
+                UTL_FILE.put_line(fich_salida_pkg, '  ' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
                 primera_col := 0;
               else
-                --UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna);
-                UTL_FILE.put_line(fich_salida_pkg, '  ,`' || columna || '`');
+                UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
               end if;        
             end loop;
             close MTDT_TC_DETAIL;
@@ -4439,18 +4243,580 @@ begin
             /****/
             dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
             UTL_FILE.put_line(fich_salida_pkg,'FROM');
-            UTL_FILE.put_line(fich_salida_pkg,'    ' ||  ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME);
-            UTL_FILE.put_line(fich_salida_pkg,'WHERE');
-            UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_scenario.FILTER_CARGA_INI || ';');
-            UTL_FILE.put_line(fich_salida_pkg,'');
-            --UTL_FILE.put_line(fich_salida_pkg,'    num_filas_hst := num_filas_hst + sql%rowcount;');
-            UTL_FILE.put_line(fich_salida_pkg,'  SELECT num_filas_hst+FOUND_ROWS() INTO num_filas_hst;');
+            /* (20170104) Angel Ruiz. Pueden aparecer Queries en TABLE_BASE_NAME */
+            if (regexp_instr (reg_scenario.TABLE_BASE_NAME,'[Ss][Ee][Ll][Ee][Cc][Tt] ') > 0) then
+              /* Tenemos una query en TABLE_BASE_NAME */
+              /* Es una query que posee un ALIAS */
+              v_alias_dim_table_base_name := trim(substr(REGEXP_SUBSTR (reg_scenario.TABLE_BASE_NAME, '\) *[a-zA-Z_0-9]+$'), 2));
+              UTL_FILE.put_line(fich_salida_pkg, '    ' || procesa_campo_filter(reg_scenario.TABLE_BASE_NAME) || ' RIGHT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+            else
+              /* No hay una query en TABLE_BASE_NAME*/
+              /* COMPROBAMOS SI AUNQUE NO HAY QUERY, HAY UN ALIAS */
+              if (REGEXP_LIKE(trim(reg_scenario.TABLE_BASE_NAME), '^[a-zA-Z_0-9#\.&]+ +[a-zA-Z_0-9]+$') = true) then
+                /* Hay un ALIAS */
+                v_alias_dim_table_base_name := trim(REGEXP_SUBSTR(TRIM(reg_scenario.TABLE_BASE_NAME), ' +[a-zA-Z_0-9]+$'));
+              else
+                v_alias_dim_table_base_name:=reg_scenario.TABLE_BASE_NAME;
+              end if;
+              UTL_FILE.put_line(fich_salida_pkg, '  ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_BASE_NAME || ' RIGHT OUTER JOIN ' || ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME || ' ON (');
+            end if;
+            /* (20170104) Angel Ruiz. FIN. Pueden aparecer Queries en TABLE_BASE_NAME */
+            /* (20161106) Angel Ruiz. Se trata de formar la clausula ON del RIGHT OUTER JOIN, ya que estamos en el escenario Historico */
+            dbms_output.put_line ('Interface COLUMNS: ' || reg_scenario.INTERFACE_COLUMNS);
+            dbms_output.put_line ('Table COLUMNS: ' || reg_scenario.TABLE_COLUMNS);
+            where_interface_columns := split_string_punto_coma (reg_scenario.INTERFACE_COLUMNS);
+            where_table_columns := split_string_punto_coma(reg_scenario.TABLE_COLUMNS);
+            dbms_output.put_line ('El numero de valores del Where interface es: ' || where_interface_columns.count);
+            dbms_output.put_line ('El numero de valores del Where interface es: ' || where_table_columns.count);
+      
+            IF (where_interface_columns.COUNT > 0  and 
+              where_table_columns.COUNT > 0 and 
+              where_interface_columns.COUNT = where_table_columns.COUNT) 
+            THEN
+              /****/
+              /* INICIO generacion parte  WHERE */
+              /****/    
+              --UTL_FILE.put_line(fich_salida_pkg, '    ' || 'WHERE ');
+              /* Procesamos el campo FILTER . Lo añado a posteriori en la recta final (20141126*/
+              FOR indx IN where_interface_columns.FIRST .. where_interface_columns.LAST
+              LOOP
+                /* (20160301) Angel Ruiz. NF: DECODE en campos */
+                if (indx = 1) then /* (20161106. Angel Ruiz. Se trata del primer elemento del ON */
+                  if (instr(where_table_columns(indx), 'DECODE') > 0 or instr(where_table_columns(indx), 'decode') > 0) then
+                    UTL_FILE.put_line(fich_salida_pkg,'    ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0) || ' = ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0));
+                  else
+                    /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
+                    if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    else
+                      --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_detail.TABLE_BASE_NAME || '.' || where_interface_columns(indx) || ' = ' || reg_detail.TABLE_NAME || '.' || where_table_columns(indx));
+                      UTL_FILE.put_line(fich_salida_pkg,'  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    end if;
+                    /* (20191219) Angel Ruiz. FIN */
+                  
+                    --UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx) || ' = ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx));
+                  end if;
+                else
+                  if (instr(where_table_columns(indx), 'DECODE') > 0 or instr(where_table_columns(indx), 'decode') > 0) then
+                    UTL_FILE.put_line(fich_salida_pkg,'  AND ' || transformo_decode (where_table_columns(indx), reg_scenario.TABLE_NAME, 0) || ' = ' || transformo_decode (where_interface_columns(indx), v_alias_dim_table_base_name, 0));
+                  else
+                    /* (20191219) Angel Ruiz. BUG. Pone un punto cuando no deberia ponerlo*/
+                    if (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') > 0 and instr(where_table_columns(indx), '.') = 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    elsif (instr(where_interface_columns(indx), '.') = 0 and instr(where_table_columns(indx), '.') > 0) then
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || where_table_columns(indx));
+                    else
+                      UTL_FILE.put_line(fich_salida_pkg,'  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx) || ' = ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx));
+                    end if;
+                    /* (20191219) Angel Ruiz. FIN */
+  
+                    --UTL_FILE.put_line(fich_salida_pkg,'  AND ' || reg_scenario.TABLE_NAME || '.' || where_table_columns(indx) || ' = ' || v_alias_dim_table_base_name || '.' || where_interface_columns(indx));
+                  end if;
+                end if;
+              END LOOP;
+              UTL_FILE.put_line(fich_salida_pkg, '    )');
+              --UTL_FILE.put_line(fich_salida_pkg, '    AND ' || reg_scenario.TABLE_BASE_NAME || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL)' );
+            END IF;
+            
+            /* (20160630) Angel Ruiz. NF: Dimensiones sin funciones cache */
+            v_hay_look_up:='N';
+            if l_FROM.count > 0 then
+              FOR indx IN l_FROM.FIRST .. l_FROM.LAST
+              LOOP
+                UTL_FILE.put_line(fich_salida_pkg, '   ' || l_FROM(indx));
+                v_hay_look_up := 'Y';
+              END LOOP;
+            end if;
+            /* FIN */
+            dbms_output.put_line ('Despues del FROM');
+            UTL_FILE.put_line(fich_salida_pkg, '  WHERE ');
+            --UTL_FILE.put_line(fich_salida_pkg, '    ' || v_alias_dim_table_base_name || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL' );
+            if (reg_scenario.FILTER is not null) then
+              /* Anadimos el campo FILTER */
+              campo_filter := procesa_campo_filter(reg_scenario.FILTER);
+              --UTL_FILE.put_line(fich_salida_pkg, '    AND ' || campo_filter);
+              UTL_FILE.put_line(fich_salida_pkg, '      ' || campo_filter);
+              UTL_FILE.put_line(fich_salida_pkg, '  AND ' || v_alias_dim_table_base_name || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL' );
+            else
+              UTL_FILE.put_line(fich_salida_pkg, '  ' || v_alias_dim_table_base_name || '.' || where_interface_columns(where_interface_columns.FIRST) || ' IS NULL' );
+            end if;
+            UTL_FILE.put_line(fich_salida_pkg,'  ;');
+            UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_hst;');
+            
+            --UTL_FILE.put_line(fich_salida_pkg,'    num_filas_hst := sql%rowcount;');
+      
+      /**************************************************/
+            /* (20150114) Angel Ruiz . VIENE LA PARTE RECIENTE PARA PROCESAR SI LA DIMENSION POSEE CARGA MANUAL INICIAL */
+            /* Comprobamos que la Dimension no tiene carga inicial manual */
+            if (reg_scenario.FILTER_CARGA_INI is not null) then
+              /* Si hay un valor en este campo, es que la dimension posee registros cargados al margen de las cargas por interfaz */
+              /* Con lo que haY que cargarlos en T_* para que no se pierdan */
+              /* al margen de la logica normal de carga de la dimension */
+              UTL_FILE.put_line(fich_salida_pkg, '');
+              UTL_FILE.put_line(fich_salida_pkg,'INSERT');
+              UTL_FILE.put_line(fich_salida_pkg,'INTO ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
+              UTL_FILE.put_line(fich_salida_pkg,'  (');
+              open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+              primera_col := 1;
+              loop
+                fetch MTDT_TC_DETAIL
+                into reg_detail;
+                exit when MTDT_TC_DETAIL%NOTFOUND;
+                if primera_col = 1 then
+                  --UTL_FILE.put_line(fich_salida_pkg, '  ' || reg_detail.TABLE_COLUMN);
+                  UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '´');
+                  primera_col := 0;
+                else
+                  --UTL_FILE.put_line(fich_salida_pkg, ' ,' || reg_detail.TABLE_COLUMN);
+                  UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
+                end if;        
+              end loop;
+              close MTDT_TC_DETAIL;
+              UTL_FILE.put_line(fich_salida_pkg,'  )');
+             
+              /* parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+              --UTL_FILE.put_line(fich_salida_pkg,'    (');
+              --open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+              --primera_col := 1;
+              --loop
+                --fetch MTDT_TC_DETAIL
+                --into reg_detail;
+                --exit when MTDT_TC_DETAIL%NOTFOUND;
+                --dbms_output.put_line ('Estoy en el Tercer Loop. El campo es: ' || reg_detail.TABLE_COLUMN);
+                --if primera_col = 1 then
+                  --UTL_FILE.put_line(fich_salida_pkg, '    ' || reg_detail.TABLE_COLUMN);
+                  --primera_col := 0;
+                --else
+                  --UTL_FILE.put_line(fich_salida_pkg,'    ,' || reg_detail.TABLE_COLUMN);
+                --end if;
+              --end loop;
+              --close MTDT_TC_DETAIL;
+              --UTL_FILE.put_line(fich_salida_pkg,'    )');
+              
+              dbms_output.put_line ('He pasado la parte del INTO');
+              /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+              /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+              /****/
+              UTL_FILE.put_line(fich_salida_pkg,'SELECT');
+              open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+              primera_col := 1;
+              loop
+                fetch MTDT_TC_DETAIL
+                into reg_detail;
+                exit when MTDT_TC_DETAIL%NOTFOUND;
+                dbms_output.put_line ('Antes de la llamada a la funcion con columna: ' || reg_detail.TABLE_COLUMN);
+                columna := genera_campo_select (reg_detail);
+                if primera_col = 1 then
+                  --UTL_FILE.put_line(fich_salida_pkg, '  ' || columna);
+                  UTL_FILE.put_line(fich_salida_pkg, '  `' || columna || '`');
+                  primera_col := 0;
+                else
+                  --UTL_FILE.put_line(fich_salida_pkg, '  ,' || columna);
+                  UTL_FILE.put_line(fich_salida_pkg, '  ,`' || columna || '`');
+                end if;        
+              end loop;
+              close MTDT_TC_DETAIL;
+              /****/
+              /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+              /****/ 
+              /****/
+              /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
+              /****/
+              dbms_output.put_line ('Antes de pasar a la parte del FROM: ');
+              UTL_FILE.put_line(fich_salida_pkg,'FROM');
+              UTL_FILE.put_line(fich_salida_pkg,'    ' ||  ESQUEMA_DM || '.' || reg_scenario.TABLE_NAME);
+              UTL_FILE.put_line(fich_salida_pkg,'WHERE');
+              UTL_FILE.put_line(fich_salida_pkg,'    ' || reg_scenario.FILTER_CARGA_INI || ';');
+              UTL_FILE.put_line(fich_salida_pkg,'');
+              --UTL_FILE.put_line(fich_salida_pkg,'    num_filas_hst := num_filas_hst + sql%rowcount;');
+              UTL_FILE.put_line(fich_salida_pkg,'  SELECT num_filas_hst+FOUND_ROWS() INTO num_filas_hst;');
+            end if;
+            UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_hst;');
+            UTL_FILE.put_line(fich_salida_pkg,'END');
+            UTL_FILE.put_line(fich_salida_pkg,'//');
+            UTL_FILE.put_line(fich_salida_pkg,'DELIMITER ;');
           end if;
-          UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_hst;');
-          UTL_FILE.put_line(fich_salida_pkg,'END');
-          UTL_FILE.put_line(fich_salida_pkg,'//');
-          UTL_FILE.put_line(fich_salida_pkg,'DELIMITER ;');
+        else
+          /* (20200128) Angel Ruiz. Se trata de escenarios que no se corresponden con los tipicos escenarios N, E, H */
+          if (reg_scenario.SCENARIO = 'I' or regexp_instr(reg_scenario.SCENARIO, '^I_.+') > 0 or regexp_instr(reg_scenario.SCENARIO, '.+_I$') > 0)
+          then
+            /* Tenemos el escenario Integracon (I) */
+            /* En este escenario se produce un truncado de la tabla y una carga de registros desde TABLE_BASE_NAME */
+            /* (20160701) Angel Ruiz. BUG: Debo borrar en cada escenario las listas de */
+            /* componentes del From y del Where */
+            l_FROM.delete;
+            l_WHERE.delete;
+            l_FROM_solo_tablas.delete;
+            lista_variables_rownumber.delete;
+            
+            v_hay_regla_seq:=false;
+            dbms_output.put_line ('Estoy dentro del scenario $' || reg_scenario.SCENARIO || '$');
+            v_TABLE_BASE_NAME_SCENARIO_I := procesa_campo_filter(reg_scenario.TABLE_BASE_NAME);
+            v_TABLE_NAME_SCENARIO_I := reg_scenario.TABLE_NAME;
+            V_EXISTE_ESCENARIO_I := true;
+            UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO ' || reg_scenario.SCENARIO || ' ###');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+
+  
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            v_variables_sesion := false;
+            if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
+              lista_variables_rownumber.EXTEND;
+              lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
+            end if;
+            if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
+              v_encontrado_var_row_number:=false;
+              if (lista_variables_rownumber.count > 0) then
+                for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  if (lista_variables_rownumber(indice_n) = v_row_number) then
+                    v_encontrado_var_row_number:=true;
+                  end if;
+                  
+                end loop;
+              end if;
+              if (v_encontrado_var_row_number = false) then
+                lista_variables_rownumber.EXTEND;
+                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+              end if;              
+            end if;
+            v_contador:=0;
+            select count(*) into v_contador from MTDT_TC_DETAIL where 
+            trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
+            if (v_contador > 0) then
+              v_variables_sesion := true;
+              for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
+              WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+              TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+              instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
+              loop
+                v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
+                v_encontrado_var_row_number:=false;
+                if (lista_variables_rownumber.count > 0) then
+                  for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                  loop
+                    if (lista_variables_rownumber(indx) = v_row_number) then
+                      v_encontrado_var_row_number:=true;
+                    end if;
+                  end loop;
+                end if;
+                if (v_encontrado_var_row_number = false) then
+                  lista_variables_rownumber.EXTEND;
+                  lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+                end if;              
+              end loop;
+            end if;
+            
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_insertadas INT;');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_insertadas = 0;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            if v_variables_sesion = true then
+                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
+                end loop;
+                UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
+            end if;
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            UTL_FILE.put_line(fich_salida_pkg,'INSERT');
+            --UTL_FILE.put_line(fich_salida_pkg,'    INTO ' || OWNER_DM || '.T_' || nombre_tabla_T || '_'' || fch_datos_in ||');
+            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || OWNER_DM || '.T_' || nombre_tabla_reducido);
+            /****/
+            /* genero la parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            UTL_FILE.put_line(fich_salida_pkg,'  (');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+              if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+                if primera_col = 1 then
+                  UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
+                  primera_col := 0;
+                else
+                  UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
+                end if;
+              end if;
+              /* (20200303) Angel Ruiz. FIN NF: Nueva regla AUTO para no tener que usar las secuencias*/
+            end loop;
+            close MTDT_TC_DETAIL;
+            UTL_FILE.put_line(fich_salida_pkg,'  )');
+            
+            dbms_output.put_line ('He pasado la parte del INTO');
+            /****/
+            /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            /****/
+            /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            UTL_FILE.put_line(fich_salida_pkg,'SELECT ');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+              if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+                columna := genera_campo_select (reg_detail);
+                if primera_col = 1 then
+                  UTL_FILE.put_line(fich_salida_pkg,columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                  primera_col := 0;
+                else
+                  UTL_FILE.put_line(fich_salida_pkg,',' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                end if;
+              end if;
+              /* (20200303) Angel Ruiz. FIN NF: Nueva regla AUTO para no tener que usar las secuencias*/              
+            end loop;
+            close MTDT_TC_DETAIL;
+            /****/
+            /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/      
+            /****/
+            /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
+            /****/    
+            dbms_output.put_line ('Despues del SELECT');
+            UTL_FILE.put_line(fich_salida_pkg,'FROM');
+            --UTL_FILE.put_line(fich_salida_pkg, '   app_mvnosa.'  || reg_scenario.TABLE_BASE_NAME || ''' || ''_'' || fch_datos_in;');
+            UTL_FILE.put_line(fich_salida_pkg, procesa_campo_filter(reg_scenario.TABLE_BASE_NAME));
+            /* (20150109) Angel Ruiz. Anyadimos las tablas necesarias para hacer los LOOK_UP */
+            v_hay_look_up:='N';
+            /* (20150311) ANGEL RUIZ. se produce un error al generar ya que la tabla de hechos no tiene tablas de LookUp */
+            if l_FROM.count > 0 then
+              FOR indx IN l_FROM.FIRST .. l_FROM.LAST
+              LOOP
+                UTL_FILE.put_line(fich_salida_pkg, l_FROM(indx));
+                v_hay_look_up := 'Y';
+              END LOOP;
+            end if;
+            /* FIN */
+            --UTL_FILE.put_line(fich_salida_pkg,'    ' || v_FROM);
+            dbms_output.put_line ('Despues del FROM');
+            
+            if (reg_scenario.FILTER is not null) then
+              /* Procesamos el campo FILTER */
+              UTL_FILE.put_line(fich_salida_pkg,'WHERE');
+              dbms_output.put_line ('Antes de procesar el campo FILTER');
+              --campo_filter := procesa_campo_filter_dinam(reg_scenario.FILTER);
+              campo_filter := procesa_campo_filter(reg_scenario.FILTER);
+              UTL_FILE.put_line(fich_salida_pkg, campo_filter);
+            end if;
+            dbms_output.put_line ('Despues de procesar el campo FILTER');
+            UTL_FILE.put_line(fich_salida_pkg, ';');
+            UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_insertadas;');
+            UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
+            UTL_FILE.put_line(fich_salida_pkg,'  END');
+            UTL_FILE.put_line(fich_salida_pkg,'  //');
+            UTL_FILE.put_line(fich_salida_pkg,'  DELIMITER ;');
+            UTL_FILE.put_line(fich_salida_pkg, '');
           
+          else
+            /* (20190128) Angel Ruiz. Cualquier escenario que no sea I */
+            l_FROM.delete;
+            l_WHERE.delete;
+            l_FROM_solo_tablas.delete;
+            lista_variables_rownumber.delete;
+            
+            v_hay_regla_seq:=false;
+            dbms_output.put_line ('Estoy dentro del scenario $' || reg_scenario.SCENARIO || '$');
+            UTL_FILE.put_line(fich_salida_pkg, '-- ### ESCENARIO ' || reg_scenario.SCENARIO || ' ###');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+
+  
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            v_variables_sesion := false;
+            if (instr(reg_scenario.TABLE_BASE_NAME, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.TABLE_BASE_NAME, '@row_number_[A-Za-z_]+');
+              lista_variables_rownumber.EXTEND;
+              lista_variables_rownumber (lista_variables_rownumber.LAST) := v_row_number;
+            end if;
+            if (instr(reg_scenario.FILTER, '@row_number_') > 0) then
+              v_variables_sesion := true;
+              v_row_number := regexp_substr(reg_scenario.FILTER, '@row_number_[A-Za-z_]+');
+              v_encontrado_var_row_number:=false;
+              if (lista_variables_rownumber.count > 0) then
+                for indice_n in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  if (lista_variables_rownumber(indice_n) = v_row_number) then
+                    v_encontrado_var_row_number:=true;
+                  end if;
+                  
+                end loop;
+              end if;
+              if (v_encontrado_var_row_number = false) then
+                lista_variables_rownumber.EXTEND;
+                lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+              end if;              
+            end if;
+            v_contador:=0;
+            select count(*) into v_contador from MTDT_TC_DETAIL where 
+            trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+            TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+            instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0;
+            if (v_contador > 0) then
+              v_variables_sesion := true;
+              for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
+              WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+              TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+              instr(MTDT_TC_DETAIL.TABLE_LKUP, '@row_number_') > 0)
+              loop
+                v_row_number := regexp_substr(registro.TABLE_LKUP, '@row_number_[A-Za-z_]+');
+                v_encontrado_var_row_number:=false;
+                if (lista_variables_rownumber.count > 0) then
+                  for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                  loop
+                    if (lista_variables_rownumber(indx) = v_row_number) then
+                      v_encontrado_var_row_number:=true;
+                    end if;
+                  end loop;
+                end if;
+                if (v_encontrado_var_row_number = false) then
+                  lista_variables_rownumber.EXTEND;
+                  lista_variables_rownumber(lista_variables_rownumber.LAST) := v_row_number;
+                end if;              
+              end loop;
+            end if;
+            
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ';');
+            UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_insertadas INT;');
+            UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET num_filas_insertadas = 0;');
+            UTL_FILE.put_line(fich_salida_pkg, '  SET var_fch_inicio = sysdate();');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+            /* (20180628 Angel Ruiz). NF: Hay que declarar variables de sesion cuando haya un row_number*/
+            if v_variables_sesion = true then
+                for indx in lista_variables_rownumber.FIRST .. lista_variables_rownumber.LAST
+                loop
+                  UTL_FILE.put_line(fich_salida_pkg, '  SET ' || lista_variables_rownumber(indx) || ' := 0;');
+                end loop;
+                UTL_FILE.put_line(fich_salida_pkg, '  SET @campo := '''';');
+            end if;
+            /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+            
+            UTL_FILE.put_line(fich_salida_pkg,'INSERT');
+            --UTL_FILE.put_line(fich_salida_pkg,'    INTO ' || OWNER_DM || '.T_' || nombre_tabla_T || '_'' || fch_datos_in ||');
+            UTL_FILE.put_line(fich_salida_pkg,'INTO ' || OWNER_DM || '.T_' || nombre_tabla_reducido);
+            /****/
+            /* genero la parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            UTL_FILE.put_line(fich_salida_pkg,'  (');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+              if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+                if primera_col = 1 then
+                  UTL_FILE.put_line(fich_salida_pkg, '  `' || reg_detail.TABLE_COLUMN || '`');
+                  primera_col := 0;
+                else
+                  UTL_FILE.put_line(fich_salida_pkg, ' ,`' || reg_detail.TABLE_COLUMN || '`');
+                end if;
+              end if;
+              /* (20200303) Angel Ruiz. FIN NF: Nueva regla AUTO para no tener que usar las secuencias*/
+            end loop;
+            close MTDT_TC_DETAIL;
+            UTL_FILE.put_line(fich_salida_pkg,'  )');
+            
+            dbms_output.put_line ('He pasado la parte del INTO');
+            /****/
+            /* Fin generacion parte  INTO (CMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            /****/
+            /* Inicio generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/
+            UTL_FILE.put_line(fich_salida_pkg,'SELECT ');
+            open MTDT_TC_DETAIL (reg_scenario.TABLE_NAME, reg_scenario.SCENARIO);
+            primera_col := 1;
+            loop
+              fetch MTDT_TC_DETAIL
+              into reg_detail;
+              exit when MTDT_TC_DETAIL%NOTFOUND;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+              if (upper(trim(reg_detail.RUL)) != 'AUTO') then
+                columna := genera_campo_select (reg_detail);
+                if primera_col = 1 then
+                  UTL_FILE.put_line(fich_salida_pkg,columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                  primera_col := 0;
+                else
+                  UTL_FILE.put_line(fich_salida_pkg,',' || columna || ' `' || reg_detail.TABLE_COLUMN || '`');
+                end if;
+              end if;
+              /* (20200303) Angel Ruiz. NF: Nueva regla AUTO para no tener que usar las secuencias*/
+            end loop;
+            close MTDT_TC_DETAIL;
+            /****/
+            /* Fin generacion parte  SELECT (CAMPO1, CAMPO2, CAMPO3, ...) */
+            /****/      
+            /****/
+            /* INICIO generacion parte  FROM (TABLA1, TABLA2, TABLA3, ...) */
+            /****/    
+            dbms_output.put_line ('Despues del SELECT');
+            UTL_FILE.put_line(fich_salida_pkg,'FROM');
+            --UTL_FILE.put_line(fich_salida_pkg, '   app_mvnosa.'  || reg_scenario.TABLE_BASE_NAME || ''' || ''_'' || fch_datos_in;');
+            UTL_FILE.put_line(fich_salida_pkg, procesa_campo_filter(reg_scenario.TABLE_BASE_NAME));
+            /* (20150109) Angel Ruiz. Anyadimos las tablas necesarias para hacer los LOOK_UP */
+            v_hay_look_up:='N';
+            /* (20150311) ANGEL RUIZ. se produce un error al generar ya que la tabla de hechos no tiene tablas de LookUp */
+            if l_FROM.count > 0 then
+              FOR indx IN l_FROM.FIRST .. l_FROM.LAST
+              LOOP
+                UTL_FILE.put_line(fich_salida_pkg, l_FROM(indx));
+                v_hay_look_up := 'Y';
+              END LOOP;
+            end if;
+            /* FIN */
+            --UTL_FILE.put_line(fich_salida_pkg,'    ' || v_FROM);
+            dbms_output.put_line ('Despues del FROM');
+            
+            if (reg_scenario.FILTER is not null) then
+              /* Procesamos el campo FILTER */
+              UTL_FILE.put_line(fich_salida_pkg,'WHERE');
+              dbms_output.put_line ('Antes de procesar el campo FILTER');
+              --campo_filter := procesa_campo_filter_dinam(reg_scenario.FILTER);
+              campo_filter := procesa_campo_filter(reg_scenario.FILTER);
+              UTL_FILE.put_line(fich_salida_pkg, campo_filter);
+            end if;
+            dbms_output.put_line ('Despues de procesar el campo FILTER');
+            UTL_FILE.put_line(fich_salida_pkg, ';');
+            UTL_FILE.put_line(fich_salida_pkg,'  SELECT FOUND_ROWS( ) INTO num_filas_insertadas;');
+            UTL_FILE.put_line(fich_salida_pkg,'  RETURN num_filas_insertadas;');
+            UTL_FILE.put_line(fich_salida_pkg,'  END');
+            UTL_FILE.put_line(fich_salida_pkg,'  //');
+            UTL_FILE.put_line(fich_salida_pkg,'  DELIMITER ;');
+            UTL_FILE.put_line(fich_salida_pkg, '');
+          end if;
         end if;
 
 /*******************************************/
@@ -4493,10 +4859,19 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '  DECLARE numero_reg_updt int;');
       UTL_FILE.put_line(fich_salida_pkg, '  DECLARE numero_reg_hist int;');
       UTL_FILE.put_line(fich_salida_pkg, '  DECLARE numero_reg_read int;');
+      V_EXISTE_ESCENARIO_I := false;
       FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
       LOOP
         UTL_FILE.put_line(fich_salida_pkg, '  DECLARE numero_reg_' || lista_scenarios_presentes(indx) || ' int;');
+        /* (20200117) Angel Ruiz. Se trata de un codigo Ad-hod para el caso de que haya un escenario I para KRC_PRODUCT_AVAIL */
+        if (upper(lista_scenarios_presentes(indx)) = 'I') then
+          V_EXISTE_ESCENARIO_I := true;
+        end if;
+        /* (20200117) FIN Angel Ruiz. Se trata de un codigo Ad-hod para el caso de que haya un escenario I para KRC_PRODUCT_AVAIL */
       END LOOP;
+      if (V_EXISTE_ESCENARIO_I = true) then
+        UTL_FILE.put_line(fich_salida_pkg, '  DECLARE v_conteo int;');      
+      end if;
       UTL_FILE.put_line(fich_salida_pkg, '  DECLARE siguiente_paso_a_ejecutar int;');
       UTL_FILE.put_line(fich_salida_pkg, '  DECLARE inicio_paso_tmr TIMESTAMP;');
       UTL_FILE.put_line(fich_salida_pkg, '  DECLARE code CHAR(5) DEFAULT ''00000'';');
@@ -4519,6 +4894,9 @@ begin
       LOOP
         UTL_FILE.put_line(fich_salida_pkg, '  SET numero_reg_' || lista_scenarios_presentes(indx) || ' = 0;');
       END LOOP;
+      if (V_EXISTE_ESCENARIO_I = true) then
+        UTL_FILE.put_line(fich_salida_pkg, '  SET v_conteo = 0;');      
+      end if;
 
       UTL_FILE.put_line(fich_salida_pkg, '');
       
@@ -4536,6 +4914,30 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '    set inicio_paso_tmr = CURRENT_TIMESTAMP();');
       UTL_FILE.put_line(fich_salida_pkg, '    /* Truncamos la tabla antes de insertar los nuevos registros por si se lanza dos veces*/');
       UTL_FILE.put_line(fich_salida_pkg, '    TRUNCATE TABLE ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido || ';');
+
+      /* (20200117) Angel Ruiz. Se trata de un codigo Ad-hod para el caso de que haya un escenario I para KRC_PRODUCT_AVAIL */
+      if (V_EXISTE_ESCENARIO_I = true) then
+        UTL_FILE.put_line(fich_salida_pkg, '    select count(1) into v_conteo');
+        UTL_FILE.put_line(fich_salida_pkg, '    from');
+        UTL_FILE.put_line(fich_salida_pkg, '    ' || v_TABLE_BASE_NAME_SCENARIO_I);
+        UTL_FILE.put_line(fich_salida_pkg, '    ;');
+        UTL_FILE.put_line(fich_salida_pkg, '');
+        UTL_FILE.put_line(fich_salida_pkg, '    if (v_conteo > 0) then');
+        UTL_FILE.put_line(fich_salida_pkg, '      TRUNCATE TABLE ' || OWNER_DM || '.' || trim(v_TABLE_NAME_SCENARIO_I) || ';');
+        FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
+        LOOP
+          if (upper(lista_scenarios_presentes(indx)) = 'I') then
+            UTL_FILE.put_line(fich_salida_pkg, '      SELECT numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_DM || '.' || lista_scenarios_presentes(indx) || '_reg_' || nombre_proceso || ' (fch_carga_in, fch_datos_in) into numero_reg_' || lista_scenarios_presentes(indx) || ';');
+            UTL_FILE.put_line(fich_salida_pkg, '      select concat(''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es:'', numero_reg_' || lista_scenarios_presentes(indx) || ');');
+            UTL_FILE.put_line(fich_salida_pkg, '      SET numero_reg_new = numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';');
+          end if;
+        END LOOP;
+        UTL_FILE.put_line(fich_salida_pkg, '    end if;');
+        
+      end if;
+      
+      /* (20200117) FIN Angel Ruiz. Se trata de un codigo Ad-hod para el caso de que haya un escenario I para KRC_PRODUCT_AVAIL */
+
       FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
       LOOP
         --if lista_scenarios_presentes (indx) = 'N'
@@ -4607,7 +5009,17 @@ begin
           --end if;
         end if;
       END LOOP;
-      
+
+
+      FOR indx IN lista_scenarios_presentes.FIRST .. lista_scenarios_presentes.LAST
+      LOOP
+        /* (20200117) Angel Ruiz.Tema de escenario I para Inventario o re-inventario*/
+        if (upper(lista_scenarios_presentes(indx)) <> 'I' and upper(lista_scenarios_presentes(indx)) <> 'N' and upper(lista_scenarios_presentes(indx)) <> 'E' and upper(lista_scenarios_presentes(indx)) <> 'H') then
+          UTL_FILE.put_line(fich_salida_pkg, '    SELECT numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || ESQUEMA_DM || '.' || lista_scenarios_presentes(indx) || '_reg_' || nombre_proceso || ' (fch_carga_in, fch_datos_in) into numero_reg_' || lista_scenarios_presentes(indx) || ';');
+          UTL_FILE.put_line(fich_salida_pkg, '    select concat(''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es:'', numero_reg_' || lista_scenarios_presentes(indx) || ');');
+          UTL_FILE.put_line(fich_salida_pkg, '    SET numero_reg_new = numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';');
+        end if;
+      END LOOP;
       UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(1) into numero_reg_read FROM ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido || ';');
       UTL_FILE.put_line(fich_salida_pkg, '    select concat(''El numero de registros leidos es: '', numero_reg_read);');
       UTL_FILE.put_line(fich_salida_pkg, '    /* Este tipo de procesos solo tienen un paso, y ha terminado OK por eso aparece un 0 en el siguiente campo */');

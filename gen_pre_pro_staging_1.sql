@@ -135,10 +135,12 @@ BEGIN
       UTL_FILE.put_line(fich_salida_pkg,'  DECLARE fch_particion varchar(8);');
       UTL_FILE.put_line(fich_salida_pkg,'  DECLARE EXIT HANDLER FOR SQLEXCEPTION' );
       UTL_FILE.put_line(fich_salida_pkg,'  BEGIN' );
-      UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS CONDITION 1' );
-      UTL_FILE.put_line(fich_salida_pkg,'    code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT, errno = MYSQL_ERRNO;' );
+      --UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS CONDITION 1' );
+      UTL_FILE.put_line(fich_salida_pkg,'    GET DIAGNOSTICS CONDITION 1' );
+      --UTL_FILE.put_line(fich_salida_pkg,'    code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT, errno = MYSQL_ERRNO;' );
+      UTL_FILE.put_line(fich_salida_pkg,'    @code = RETURNED_SQLSTATE, @msg = MESSAGE_TEXT, @errno = MYSQL_ERRNO;' );
       UTL_FILE.put_line(fich_salida_pkg,'    select ''Error en el procedure pre_' || nombre_proceso || '.'';' );      
-      UTL_FILE.put_line(fich_salida_pkg,'    select concat(''Error code: '', errno, ''('', code, ''). '', ''Mensaje: '', msg);' );
+      UTL_FILE.put_line(fich_salida_pkg,'    select concat(''Error code: '', @errno, ''('', @code, ''). '', ''Mensaje: '', @msg);' );
       UTL_FILE.put_line(fich_salida_pkg,'    RESIGNAL;' );
       UTL_FILE.put_line(fich_salida_pkg,'  END;' );
       UTL_FILE.put_line(fich_salida_pkg,'' );
@@ -152,7 +154,12 @@ BEGIN
         UTL_FILE.put_line(fich_salida_pkg,'    DEALLOCATE PREPARE stmt;' );
         --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE IMMEDIATE ''ALTER TABLE  ' || OWNER_SA || ''' || ''.SA_'' || ''' || reg_summary.CONCEPT_NAME || ''' || '' TRUNCATE PARTITION PA_' || reg_summary.CONCEPT_NAME || ''' || ''_'' || fch_datos_in;');
         UTL_FILE.put_line(fich_salida_pkg,'  else' );
-        UTL_FILE.put_line(fich_salida_pkg,'    set @sql_text := concat(''ALTER TABLE '',''' || NAME_DM || ''', ''.SA_'', ''' || reg_summary.CONCEPT_NAME || ''', '' ADD PARTITION PA_'', ''' || reg_summary.CONCEPT_NAME || ''', ''_'', fch_datos_in, '' VALUES LESS THAN ('', fch_particion , '') TABLESPACE DWTBSP_D_MVNO_SA'', '';'');');
+        if (TABLESPACE_SA is null) then
+          UTL_FILE.put_line(fich_salida_pkg,'    set @sql_text := concat(''ALTER TABLE '',''' || NAME_DM || ''', ''.SA_'', ''' || reg_summary.CONCEPT_NAME || ''', '' ADD PARTITION PA_'', ''' || reg_summary.CONCEPT_NAME || ''', ''_'', fch_datos_in, '' VALUES LESS THAN ('', fch_particion , '')'', '';'');');
+        else
+          --UTL_FILE.put_line(fich_salida_pkg,'    set @sql_text := concat(''ALTER TABLE '',''' || NAME_DM || ''', ''.SA_'', ''' || reg_summary.CONCEPT_NAME || ''', '' ADD PARTITION PA_'', ''' || reg_summary.CONCEPT_NAME || ''', ''_'', fch_datos_in, '' VALUES LESS THAN ('', fch_particion , '') TABLESPACE DWTBSP_D_MVNO_SA'', '';'');');
+          UTL_FILE.put_line(fich_salida_pkg,'    set @sql_text := concat(''ALTER TABLE '',''' || NAME_DM || ''', ''.SA_'', ''' || reg_summary.CONCEPT_NAME || ''', '' ADD PARTITION PA_'', ''' || reg_summary.CONCEPT_NAME || ''', ''_'', fch_datos_in, '' VALUES LESS THAN ('', fch_particion , '') TABLESPACE '', ''' || TABLESPACE_SA || ''', '';'');');
+        end if;
         UTL_FILE.put_line(fich_salida_pkg,'    prepare stmt from @sql_text;' );
         UTL_FILE.put_line(fich_salida_pkg,'    execute stmt;' );
         UTL_FILE.put_line(fich_salida_pkg,'    DEALLOCATE PREPARE stmt;' );
@@ -192,10 +199,11 @@ BEGIN
         UTL_FILE.put_line(fich_salida_pkg,'  DECLARE CONTINUE HANDLER FOR NOT FOUND SET finalizado = 1;' );
         UTL_FILE.put_line(fich_salida_pkg,'  DECLARE EXIT HANDLER FOR SQLEXCEPTION' );
         UTL_FILE.put_line(fich_salida_pkg,'  BEGIN' );
-        UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS CONDITION 1' );
-        UTL_FILE.put_line(fich_salida_pkg,'    code = RETURNED_SQLSTATE, msg = MESSAGE_TEXT, errno = MYSQL_ERRNO;' );
+        --UTL_FILE.put_line(fich_salida_pkg,'    GET STACKED DIAGNOSTICS CONDITION 1' );
+        UTL_FILE.put_line(fich_salida_pkg,'    GET DIAGNOSTICS CONDITION 1' );
+        UTL_FILE.put_line(fich_salida_pkg,'    @code = RETURNED_SQLSTATE, @msg = MESSAGE_TEXT, @errno = MYSQL_ERRNO;' );
         UTL_FILE.put_line(fich_salida_pkg,'    select ''Error en el procedure pos_' || nombre_proceso || '.'';' );
-        UTL_FILE.put_line(fich_salida_pkg,'    select concat(''Error code: '', errno, ''('', code, ''). '', ''Mensaje: '', msg);' );
+        UTL_FILE.put_line(fich_salida_pkg,'    select concat(''Error code: '', @errno, ''('', @code, ''). '', ''Mensaje: '', @msg);' );
         UTL_FILE.put_line(fich_salida_pkg,'    RESIGNAL;' );
         UTL_FILE.put_line(fich_salida_pkg,'  END;' );
         UTL_FILE.put_line(fich_salida_pkg,'' );

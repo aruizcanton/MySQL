@@ -18,8 +18,8 @@ SELECT
     trim(MTDT_TC_SCENARIO.TABLE_NAME) in 
     (
     --'CMBF_SURVEY_USERS', 'CMBF_SURVEY_USERS_DETAIL', 'CMBF_USERS_COURSES', 'CMBF_USERS_COURSES_DETAIL', 'CMBF_EVENTS'
-    'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST', 'KRC_PRODUCT_AVAIL', 'KRF_OFFER_COMP'
-    );
+    'DMF_VENTAS_USUARIO', 'DMF_VENTAS_MESA', 'DMF_VENTAS_TIPO_PAGO', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_FORECAST'
+    , 'KRF_OFFER_COMP', 'KRF_WEEK_SALES', 'KRF_SALES_FORECAST', 'KRF_PRODUCT_AVAIL_HIST', 'KRF_OFFER_COMP_HIST');
     --('NGA_PARQUE_SVA_MES');
     
   cursor MTDT_SCENARIO (table_name_in IN VARCHAR2)
@@ -131,7 +131,9 @@ SELECT
 
   
   lista_pk                                      list_columns_primary := list_columns_primary ();
-  lista_par                                      list_columns_par := list_columns_par ();
+  lista_par                                     list_columns_par := list_columns_par ();
+  list_var_a_leer_fich_entorno                  list_strings := list_strings();
+  list_var_a_leer_fich_entorno_1                list_strings := list_strings();
   tipo_col                                     varchar2(50);
   primera_col                               PLS_INTEGER;
   columna                                    VARCHAR2(30500);
@@ -186,10 +188,18 @@ SELECT
   v_encontrado_var_row_number BOOLEAN;
   v_CVE_DIA_es_col        PLS_integer;
   v_CVE_MES_es_col      PLS_integer;
+  v_CVE_WEEK_es_col     PLS_integer;
   v_nombre_campo_particionado VARCHAR2(30);
   V_EXISTE_ESCENARIO_I BOOLEAN:=false;  /* (20200117)*/
   v_TABLE_BASE_NAME_SCENARIO_I reg_scenario.TABLE_BASE_NAME%type; /* (20200117)*/
   v_TABLE_NAME_SCENARIO_I reg_scenario.TABLE_NAME%type; /* (20200117)*/
+  v_acumuladora                     VARCHAR2(500);
+  v_acumuladora_1                     VARCHAR2(500);
+  v_pasada                          PLS_integer;
+  var_a_leer                        VARCHAR2(500);
+  v_escenario_numero                PLS_integer:=0;
+  v_param_leidos_de_fich_ent   VARCHAR2(500);
+  
   
   
 
@@ -3383,6 +3393,52 @@ begin
       
     end loop; /* fin del LOOP MTDT_SCENARIO  */
     close MTDT_SCENARIO;
+
+    /* (20200130) Angel Ruiz. NF: Variables @VAR_* dentro del código para poder leer su valor del ficehro de entonrno */
+    open MTDT_SCENARIO (reg_tabla.TABLE_NAME);
+    loop
+      fetch MTDT_SCENARIO
+      into reg_scenario;
+      exit when MTDT_SCENARIO%NOTFOUND;
+      list_var_a_leer_fich_entorno.EXTEND;
+      list_var_a_leer_fich_entorno_1.EXTEND;
+      v_contador:=0;
+      select count(*) into v_contador from MTDT_TC_DETAIL where 
+      trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+      TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+      regexp_instr(MTDT_TC_DETAIL.TABLE_LKUP, '#@[Vv][Aa][Rr]_[A-Va-v_]+#') > 0;
+      if (v_contador > 0) then
+        v_acumuladora := null;
+        v_pasada := 0;
+        for registro in (SELECT TABLE_LKUP FROM MTDT_TC_DETAIL
+        WHERE trim(MTDT_TC_DETAIL.TABLE_NAME) = reg_tabla.TABLE_NAME and
+        TRIM(MTDT_TC_DETAIL.SCENARIO) = reg_scenario.SCENARIO and
+        regexp_instr(MTDT_TC_DETAIL.TABLE_LKUP, '#@[Vv][Aa][Rr]_[A-Za-z_]+#') > 0)
+        loop
+          var_a_leer := substr(regexp_substr(registro.TABLE_LKUP, '#@[Vv][Aa][Rr]_[A-Za-z_]+#'), 3);
+          var_a_leer := substr(var_a_leer, 1, length(var_a_leer)-1);
+          if (instr(v_acumuladora, var_a_leer) = 0) then
+            if (v_pasada = 0) then
+              v_acumuladora := ', ' || var_a_leer || ' INT';
+              v_acumuladora_1 := ', ${' || var_a_leer || '}';
+              v_pasada := v_pasada +1;
+            else
+              v_acumuladora := v_acumuladora || ',' || var_a_leer || ' INT';
+              v_acumuladora_1 := v_acumuladora_1 || ',${' || var_a_leer || '}';
+            end if;
+          end if;
+        end loop;
+        list_var_a_leer_fich_entorno(list_var_a_leer_fich_entorno.LAST) := v_acumuladora;
+        list_var_a_leer_fich_entorno_1(list_var_a_leer_fich_entorno_1.LAST) := v_acumuladora_1;
+      else
+        list_var_a_leer_fich_entorno(list_var_a_leer_fich_entorno.LAST) := 'NO EXISTE';
+        list_var_a_leer_fich_entorno(list_var_a_leer_fich_entorno_1.LAST) := 'NO EXISTE';
+      end if;      
+    end loop; /* fin del LOOP MTDT_SCENARIO  */
+    close MTDT_SCENARIO;
+    /* (20190130) Angel Ruiz. FIN NF: Variables @VAR_* dentro del código para poder leer su valor del ficehro de entonrno */
+
+
     
     --UTL_FILE.put_line(fich_salida_pkg, '' ); 
     --UTL_FILE.put_line(fich_salida_pkg, '  PROCEDURE lhe_' || nombre_proceso || ' (fch_carga_in IN VARCHAR2, fch_datos_in IN VARCHAR2, forzado_in IN VARCHAR2);');
@@ -3424,9 +3480,12 @@ begin
       --genera_cuerpo_regla_function (reg_function);      
     --end loop;
     --close MTDT_TC_FUNCTION;
+    /* Tercero genero los metodos para los escenarios */
+    
     UTL_FILE.put_line(fich_salida_pkg, '');
     UTL_FILE.put_line(fich_salida_pkg, '-- ### INICIO DEL SCRIPT');
     UTL_FILE.put_line(fich_salida_pkg, '');
+    v_escenario_numero := 0;
     /* Tercero genero los cuerpos de los metodos que implementan los escenarios */
     open MTDT_SCENARIO (reg_tabla.TABLE_NAME);
     loop
@@ -3435,6 +3494,7 @@ begin
       exit when MTDT_SCENARIO%NOTFOUND;
       dbms_output.put_line ('Estoy en el segundo LOOP. La tabla que tengo es: ' || reg_tabla.TABLE_NAME || '. El escenario es: ' || reg_scenario.SCENARIO);
       v_hay_regla_seq:=false; /*(20170107) Angl Ruiz. NF: Reglas SEQ */
+      v_escenario_numero := v_escenario_numero + 1;
       if (reg_scenario.SCENARIO = 'N')  /* Proceso el escenario NEW */
       then
         /* SCENARIO NUEVO */
@@ -3503,11 +3563,23 @@ begin
             end loop;
           end if;
           
-          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number*/
+          /* (20180628 Angel Ruiz). NF FIN: Hay que declarar variables de sesion cuando haya un row_number */
           
           UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ';');
           UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
-          UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+          /* (20200131) Angel Ruiz. NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+          if (list_var_a_leer_fich_entorno.count = 0) then
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+          else
+            /* Tenemos variable de tipo @VAR_ */
+            if (list_var_a_leer_fich_entorno(v_escenario_numero) = 'NO EXISTE') then
+              UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            else
+              UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)' || list_var_a_leer_fich_entorno(v_escenario_numero) || ') returns INT');
+            end if;
+          end if;
+          /* (20200131) Angel Ruiz. FIN NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+          
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
           UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_insertadas INT;');
           UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
@@ -3740,7 +3812,19 @@ begin
           --UTL_FILE.put_line(fich_salida_pkg,'    EXECUTE IMMEDIATE ''INSERT');
           UTL_FILE.put_line(fich_salida_pkg, 'DROP FUNCTION IF EXISTS ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ';');
           UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
-          UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+          /* (20200131) Angel Ruiz. NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+          if (list_var_a_leer_fich_entorno.count = 0) then
+            UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+          else
+            /* Tenemos variable de tipo @VAR_ */
+            if (list_var_a_leer_fich_entorno(v_escenario_numero) = 'NO EXISTE') then
+              UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)) returns INT');
+            else
+              UTL_FILE.put_line(fich_salida_pkg, 'CREATE FUNCTION ' || OWNER_DM || '.' || reg_scenario.SCENARIO || '_' || 'reg_' || nombre_proceso || ' (fch_carga_in VARCHAR(8), fch_datos_in VARCHAR(8)' || list_var_a_leer_fich_entorno(v_escenario_numero) || ') returns INT');
+            end if;
+          end if;
+          /* (20200131) Angel Ruiz. FIN NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+          
           UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
           UTL_FILE.put_line(fich_salida_pkg, '  DECLARE num_filas_insertadas INT;');
           UTL_FILE.put_line(fich_salida_pkg, '  DECLARE var_fch_inicio DATETIME;');
@@ -3884,7 +3968,23 @@ begin
 
     UTL_FILE.put_line(fich_salida_pkg, 'DROP PROCEDURE IF EXISTS ' || OWNER_DM || '.lh_' || nombre_proceso || ';');
     UTL_FILE.put_line(fich_salida_pkg, 'DELIMITER //');
-    UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_DM || '.lh_' || nombre_proceso || ' (IN fch_carga_in VARCHAR(8), IN fch_datos_in VARCHAR(8), IN forzado_in VARCHAR(1))');
+    /* (20200131) Angel Ruiz. NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+    if (list_var_a_leer_fich_entorno.count = 0) then
+      /* No Existen variables que se leen desde el fichero de configuración */
+      UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_DM || '.lh_' || nombre_proceso || ' (IN fch_carga_in VARCHAR(8), IN fch_datos_in VARCHAR(8), IN forzado_in VARCHAR(1))');
+    else
+      /* Existen variables que se leen desde el fichero de configuración */
+      v_param_leidos_de_fich_ent := null;
+      FOR indx IN list_var_a_leer_fich_entorno.FIRST .. list_var_a_leer_fich_entorno.LAST
+      LOOP
+        if (list_var_a_leer_fich_entorno(indx) <> 'NO EXISTE') then
+          v_param_leidos_de_fich_ent := v_param_leidos_de_fich_ent || list_var_a_leer_fich_entorno(indx);
+        end if;
+      END LOOP;
+      UTL_FILE.put_line(fich_salida_pkg, 'CREATE PROCEDURE ' || OWNER_DM || '.lh_' || nombre_proceso || ' (IN fch_carga_in VARCHAR(8), IN fch_datos_in VARCHAR(8)' || v_param_leidos_de_fich_ent || ', IN forzado_in VARCHAR(1))');
+    end if;
+    /* (20200131) Angel Ruiz. FIN NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+    
     UTL_FILE.put_line(fich_salida_pkg, 'BEGIN');
     UTL_FILE.put_line(fich_salida_pkg, '  DECLARE numero_reg_new int;');
     V_EXISTE_ESCENARIO_I := false;
@@ -3948,6 +4048,13 @@ begin
         v_tipo_particionado := 'D';   /* Particionado Diario */
         v_CVE_DIA_es_col := 1;
       end if;
+      if ((regexp_count(substr(reg_modelo_logico_col.TABLE_NAME, 1, instr(reg_modelo_logico_col.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND 
+      upper(reg_modelo_logico_col.COLUMN_NAME) = 'CVE_WEEK') then 
+        /* SE TRATA DE UNA TABLA DE HECHOS CON COLUMNA CVE_DIA ==> PARTICIONADO DIARIO */
+        v_tipo_particionado := 'W';   /* Particionado Semanal */
+        v_CVE_WEEK_es_col := 1;
+      end if;
+      
       /* Gestionamos el posible particionado de la tabla */
       --if (regexp_count(substr(r_mtdt_modelo_logico_COLUMNA.TABLE_NAME, 1, 4) ,'??F_',1,'i') >0 AND
       if ((regexp_count(substr(reg_modelo_logico_col.TABLE_NAME, 1, instr(reg_modelo_logico_col.TABLE_NAME, '_')), '^?+F_',1,'i') >0) AND
@@ -3982,23 +4089,46 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '');
     /* (20191220) Angel Ruiz. BUG de las tablas de hechos que no están particionadas */
     if (v_tipo_particionado <> 'S') then
-        /* Significa que la tabla aunque es de hecho no esta particionada */
-      UTL_FILE.put_line(fich_salida_pkg, '    /* Veo si la particion en la que se insertaran los registros existe */');
-      UTL_FILE.put_line(fich_salida_pkg, '    if not exists (select 1 from INFORMATION_SCHEMA.PARTITIONS where TABLE_SCHEMA = ''' || ESQUEMA_DM || ''' AND TABLE_NAME = ''' || reg_tabla.TABLE_NAME || ''' AND PARTITION_NAME = concat(''' || v_nombre_particion || ''', ''_'', fch_datos_in)' ||') then');
-      UTL_FILE.put_line(fich_salida_pkg, '      /* Si no existe se crea */');
-      UTL_FILE.put_line(fich_salida_pkg, '      set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%m%d'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' ADD PARTITION (PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '' VALUES LESS THAN ('', v_fch_particion, ''));'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
-      UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '    else');
-      UTL_FILE.put_line(fich_salida_pkg, '      /* Si existe se trunca */');
-      UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' TRUNCATE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '';'');');
-      UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
-      UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '    end if;');
+        /* Significa que la tabla de hechos esta particionada */
+        /* (20190129) Angel Ruiz. NF: Tenemos particionado semanal */
+        if (v_tipo_particionado = 'D') then
+          /* Se trata de un particionado diario*/
+          UTL_FILE.put_line(fich_salida_pkg, '    /* Veo si la particion en la que se insertaran los registros existe */');
+          UTL_FILE.put_line(fich_salida_pkg, '    if not exists (select 1 from INFORMATION_SCHEMA.PARTITIONS where TABLE_SCHEMA = ''' || ESQUEMA_DM || ''' AND TABLE_NAME = ''' || reg_tabla.TABLE_NAME || ''' AND PARTITION_NAME = concat(''' || v_nombre_particion || ''', ''_'', fch_datos_in)' ||') then');
+          UTL_FILE.put_line(fich_salida_pkg, '      /* Si no existe se crea */');
+          UTL_FILE.put_line(fich_salida_pkg, '      set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%m%d'');');
+          UTL_FILE.put_line(fich_salida_pkg, '');
+          UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' ADD PARTITION (PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '' VALUES LESS THAN ('', v_fch_particion, ''));'');');
+          UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
+          UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '    else');
+          UTL_FILE.put_line(fich_salida_pkg, '      /* Si existe se trunca */');
+          UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' TRUNCATE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '';'');');
+          UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
+          UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '    end if;');
+        end if;
+        if (v_tipo_particionado = 'W') then
+          /* (20190129) Angel Ruiz. NF: Se trata de un particionado semanal*/
+          UTL_FILE.put_line(fich_salida_pkg, '    /* Veo si la particion en la que se insertaran los registros existe */');
+          UTL_FILE.put_line(fich_salida_pkg, '    if not exists (select 1 from INFORMATION_SCHEMA.PARTITIONS where TABLE_SCHEMA = ''' || ESQUEMA_DM || ''' AND TABLE_NAME = ''' || reg_tabla.TABLE_NAME || ''' AND PARTITION_NAME = concat(''' || v_nombre_particion || ''', ''_'', date_format(str_to_date(fch_datos_in, ''%Y%m%u'')))' ||') then');
+          UTL_FILE.put_line(fich_salida_pkg, '      /* Si no existe se crea */');
+          UTL_FILE.put_line(fich_salida_pkg, '      set v_fch_particion := date_format(date_add(str_to_date(fch_datos_in, ''%Y%m%d''), INTERVAL 1 WEEK), ''%Y%m%u'');');
+          UTL_FILE.put_line(fich_salida_pkg, '');
+          UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' ADD PARTITION (PARTITION '', ''' || v_nombre_particion || '_'', ' || 'date_format(str_to_date(fch_datos_in, ''%Y%m%d''), ''%Y%m%u''), '' VALUES LESS THAN ('', v_fch_particion, ''));'');');
+          UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
+          UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '    else');
+          UTL_FILE.put_line(fich_salida_pkg, '      /* Si existe se trunca */');
+          UTL_FILE.put_line(fich_salida_pkg, '      SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' TRUNCATE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'date_format(str_to_date(fch_datos_in, ''%Y%m%d''), ''%Y%m%u''), '';'');');
+          UTL_FILE.put_line(fich_salida_pkg, '      PREPARE stmt FROM @sql_text;');
+          UTL_FILE.put_line(fich_salida_pkg, '      execute stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '      DEALLOCATE PREPARE stmt;');
+          UTL_FILE.put_line(fich_salida_pkg, '    end if;');
+        end if;
     end if;
     /* (20191220) Angel Ruiz. FIN BUG de las tablas de hechos que no están particionadas */
     
@@ -4030,9 +4160,22 @@ begin
     LOOP
       /* (20200117) Angel Ruiz.Tema de escenario I para Inventario o re-inventario*/
       if (upper(lista_scenarios_presentes(indx)) <> 'I') then
-        UTL_FILE.put_line(fich_salida_pkg, '    SELECT numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_DM || '.' || lista_scenarios_presentes(indx) || '_reg_' || nombre_proceso || ' (fch_carga_in, fch_datos_in) into numero_reg_' || lista_scenarios_presentes(indx) || ';');
-        UTL_FILE.put_line(fich_salida_pkg, '    select concat(''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es:'', numero_reg_' || lista_scenarios_presentes(indx) || ');');
-        UTL_FILE.put_line(fich_salida_pkg, '    SET numero_reg_new = numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';');
+        /* (20200131) Angel Ruiz. NF: Uso de variables @VAR_ cuyo valor se lee de un fichero */
+        if (list_var_a_leer_fich_entorno.count = 0) then
+          UTL_FILE.put_line(fich_salida_pkg, '    SELECT numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_DM || '.' || lista_scenarios_presentes(indx) || '_reg_' || nombre_proceso || ' (fch_carga_in, fch_datos_in) into numero_reg_' || lista_scenarios_presentes(indx) || ';');
+          UTL_FILE.put_line(fich_salida_pkg, '    select concat(''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es:'', numero_reg_' || lista_scenarios_presentes(indx) || ');');
+          UTL_FILE.put_line(fich_salida_pkg, '    SET numero_reg_new = numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';');
+        else
+          if (list_var_a_leer_fich_entorno(indx) <> 'NO EXISTE') then
+            UTL_FILE.put_line(fich_salida_pkg, '    SELECT numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_DM || '.' || lista_scenarios_presentes(indx) || '_reg_' || nombre_proceso || ' (fch_carga_in, fch_datos_in' || list_var_a_leer_fich_entorno(indx) || ') into numero_reg_' || lista_scenarios_presentes(indx) || ';');
+            UTL_FILE.put_line(fich_salida_pkg, '    select concat(''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es:'', numero_reg_' || lista_scenarios_presentes(indx) || ');');
+            UTL_FILE.put_line(fich_salida_pkg, '    SET numero_reg_new = numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';');
+          else
+            UTL_FILE.put_line(fich_salida_pkg, '    SELECT numero_reg_' || lista_scenarios_presentes(indx) || ' + ' || OWNER_DM || '.' || lista_scenarios_presentes(indx) || '_reg_' || nombre_proceso || ' (fch_carga_in, fch_datos_in) into numero_reg_' || lista_scenarios_presentes(indx) || ';');
+            UTL_FILE.put_line(fich_salida_pkg, '    select concat(''El numero de registros insertados en el escenario ' || lista_scenarios_presentes(indx) || ' es:'', numero_reg_' || lista_scenarios_presentes(indx) || ');');
+            UTL_FILE.put_line(fich_salida_pkg, '    SET numero_reg_new = numero_reg_new + numero_reg_' || lista_scenarios_presentes(indx) || ';');
+          end if;
+        end if;
       end if;
     END LOOP;
     UTL_FILE.put_line(fich_salida_pkg, '    /* Este tipo de procesos solo tienen un paso, y ha terminado OK por eso aparece un 0 en el siguiente campo */');
@@ -4082,7 +4225,7 @@ begin
     UTL_FILE.put_line(fich_salida_pkg, '    SELECT COUNT(*) INTO num_reg FROM ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';');
 
     if v_tipo_particionado = 'S' then
-      /* La tabla no esta particionada */
+      /* (20191220) Angel Ruiz. La tabla no esta particionada */
       
       UTL_FILE.put_line(fich_salida_pkg, '    INSERT');
       UTL_FILE.put_line(fich_salida_pkg, '    INTO ' || ESQUEMA_DM || '.' || reg_tabla.TABLE_NAME);
@@ -4120,13 +4263,27 @@ begin
       UTL_FILE.put_line(fich_salida_pkg, '    FROM ' || ESQUEMA_DM || '.T_' || nombre_tabla_reducido);
       UTL_FILE.put_line(fich_salida_pkg, '    ;');
     else
-      /* La tabla esta particionada */
-      UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%m%d'');');
-      UTL_FILE.put_line(fich_salida_pkg, '');
-      UTL_FILE.put_line(fich_salida_pkg, '    SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' EXCHANGE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '' WITH TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';'');');
-      UTL_FILE.put_line(fich_salida_pkg, '    PREPARE stmt FROM @sql_text;');
-      UTL_FILE.put_line(fich_salida_pkg, '    execute stmt;');
-      UTL_FILE.put_line(fich_salida_pkg, '    DEALLOCATE PREPARE stmt;');
+      /* (20191220) Angel Ruiz. La tabla esta particionada */
+      /* (20190129) Angel Ruiz. NF: Tenemos particionado semanal */
+      if (v_tipo_particionado = 'D') then
+        /* Se trata de un particionado diario*/
+        UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(adddate(str_to_date(fch_datos_in, ''%Y%m%d''), 1), ''%Y%m%d'');');
+        UTL_FILE.put_line(fich_salida_pkg, '');
+        UTL_FILE.put_line(fich_salida_pkg, '    SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' EXCHANGE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'fch_datos_in, '' WITH TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    PREPARE stmt FROM @sql_text;');
+        UTL_FILE.put_line(fich_salida_pkg, '    execute stmt;');
+        UTL_FILE.put_line(fich_salida_pkg, '    DEALLOCATE PREPARE stmt;');
+      end if;
+      if (v_tipo_particionado = 'W') then
+        /* (20190129) Angel Ruiz. NF: Se trata de un particionado semanal*/
+        UTL_FILE.put_line(fich_salida_pkg, '    set v_fch_particion := date_format(date_add(str_to_date(fch_datos_in, ''%Y%m%d''), INTERVAL 1 WEEK), ''%Y%m%u'');');
+        UTL_FILE.put_line(fich_salida_pkg, '');
+        UTL_FILE.put_line(fich_salida_pkg, '    SET @sql_text := concat(''ALTER TABLE ' || reg_tabla.TABLE_NAME || ' EXCHANGE PARTITION '', ''' || v_nombre_particion || '_'', ' || 'date_format(str_to_date(fch_datos_in, ''%Y%m%d''), ''%Y%m%u''), '' WITH TABLE ' || OWNER_DM || '.T_' || nombre_tabla_reducido || ';'');');
+        UTL_FILE.put_line(fich_salida_pkg, '    execute stmt;');
+        UTL_FILE.put_line(fich_salida_pkg, '    DEALLOCATE PREPARE stmt;');
+        
+      end if;
+      
     end if;
     UTL_FILE.put_line(fich_salida_pkg, '');
     UTL_FILE.put_line(fich_salida_pkg, '    CALL ' || OWNER_MTDT || '.inserta_monitoreo (''' || nombre_fich_exchange || ''', 1, 0, inicio_paso_tmr, CURRENT_TIMESTAMP(), STR_TO_DATE(fch_datos_in,''%Y%m%d''), STR_TO_DATE(fch_carga_in,''%Y%m%d''), 0, 0, 0, 0, num_reg);');
@@ -4294,7 +4451,24 @@ begin
     UTL_FILE.put_line(fich_salida_load, '# Llamada a mySql');
     UTL_FILE.put_line(fich_salida_load, 'mysql -Ns -u ${BD_USUARIO} -p${BD_CLAVE} -D ${BD_SID} -h ${HOST_' || NAME_DM || '} << EOF >> ${' || NAME_DM || '_TRAZAS}/load_he_' || nombre_proceso || '_${FECHA_HORA}' || '.log ' ||  '2>&' || '1');
     UTL_FILE.put_line(fich_salida_load, '');
-    UTL_FILE.put_line(fich_salida_load, '  ' || 'call ' || ESQUEMA_DM || '.' || 'lh_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');
+    /* (20200131) Angel Ruiz. NF: Uso de variables @VAR_ cuyo valor se lee del fichero de entorno */
+    if (list_var_a_leer_fich_entorno.count = 0) then
+      /* No esiste ninguna variable de este tipo, que es le caso mas normal */
+      UTL_FILE.put_line(fich_salida_load, '  ' || 'call ' || ESQUEMA_DM || '.' || 'lh_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'', ''${BAN_FORZADO}'');');
+    else
+      /* Existen variables de tipo @VAR_ */
+
+      v_param_leidos_de_fich_ent := null;
+      FOR indx IN list_var_a_leer_fich_entorno_1.FIRST .. list_var_a_leer_fich_entorno_1.LAST
+      LOOP
+        if (list_var_a_leer_fich_entorno_1(indx) <> 'NO EXISTE') then
+          v_param_leidos_de_fich_ent := v_param_leidos_de_fich_ent || list_var_a_leer_fich_entorno_1(indx);
+        end if;
+      END LOOP;
+      UTL_FILE.put_line(fich_salida_load, '  ' || 'call ' || ESQUEMA_DM || '.' || 'lh_' || nombre_proceso || ' (''${FCH_CARGA}'', ''${FCH_DATOS}'',' || v_param_leidos_de_fich_ent || '''${BAN_FORZADO}'');');
+    end if;
+    /* (20200131) Angel Ruiz. FIN NF: Uso de variables @VAR_ cuyo valor se lee del fichero de entorno */
+    
     UTL_FILE.put_line(fich_salida_load, 'quit');
     UTL_FILE.put_line(fich_salida_load, 'EOF');
     UTL_FILE.put_line(fich_salida_load, '');

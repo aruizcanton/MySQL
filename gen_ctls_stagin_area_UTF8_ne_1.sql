@@ -16,7 +16,7 @@ DECLARE
       TRIM(HISTORY) "HISTORY"
     FROM MTDT_INTERFACE_SUMMARY    
     WHERE SOURCE <> 'SA'  -- Este origen es el que se ha considerado para las dimensiones que son de integracion ya que se cargan a partir de otras dimensiones de SA 
---    and CONCEPT_NAME in ('USERS', 'COURSES', 'CATEGORIES', 'GROUPS', 'BRANCHES', 'TESTS', 'TEST_ANSWERS'
+    --and CONCEPT_NAME in ('TRAFICO_TARIFICADO')
 --  , 'SURVEY', 'SURVEYANSWERS', 'BRANCHES_COURSES', 'BRANCHES_USERS', 'CATEGORIES_COURSES', 'COURSE_USERS'
 --  , 'COURSE_UNITS', 'GROUPS_COURSES', 'GROUPS_USERS', 'USER_CERTIFICATIONS', 'USER_BADGES', 'USER_PROGRESS_UNIT'
 --  , 'PROFILE', 'RASGOS', 'ROLES', 'OPS', 'CONSUMER_PREFER', 'WARNINGS', 'CONSUMPTION_PREFER', 'FORMULARIO', 'EVENTS');
@@ -243,6 +243,12 @@ BEGIN
             else
               tipo_col := '@'|| reg_datail.COLUMNA;
             end if;
+          elsif (reg_datail.LENGTH = '30') then
+            if (reg_datail.NULABLE = 'N') then
+              tipo_col := '@'|| reg_datail.COLUMNA;
+            else
+              tipo_col := '@'|| reg_datail.COLUMNA;
+            end if;
           else
             /* (20141217) Angel Ruiz */
             /* Pueden venir blancos en los campos fecha. Hay que controlarlo */
@@ -296,10 +302,10 @@ BEGIN
             elsif (regexp_count(reg_datail.COLUMNA,'^COD_',1,'i') >0  and reg_datail.NULABLE = 'N' and reg_datail.LENGTH>2) then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
               entra_en_case:=1;
-            elsif (reg_datail.NULABLE = 'N' and (reg_datail.LENGTH>2 and reg_datail.LENGTH<=11)) then
+            elsif (reg_datail.NULABLE = 'N' and (to_number(reg_datail.LENGTH) > 2 and to_number(reg_datail.LENGTH) <= 11)) then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NI#'', @' || reg_datail.COLUMNA || ')';
               entra_en_case:=1;
-            elsif (reg_datail.NULABLE = 'N' and reg_datail.LENGTH>11) then 
+            elsif (reg_datail.NULABLE = 'N' and to_number(reg_datail.LENGTH) > 11) then 
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''NO INFORMADO'', @' || reg_datail.COLUMNA || ')';
               entra_en_case:=1;
             /* (20191024) Angel Ruiz. BUG. Estaba metiendo cadenas vacías en lugar de nulos */
@@ -350,6 +356,19 @@ BEGIN
           /* (20180417) Angel Ruiz. Otro formato de Fecha  '%d/%m/%Y, %H:%i:%s'*/
             if (reg_datail.NULABLE = 'N') then
               tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', str_to_date(@' || reg_datail.COLUMNA || ', ''%d/%m/%Y, %H:%i:%s''))';
+              entra_en_case:=1;
+            else
+              /* (20191024) Angel Ruiz. BUG*/
+              --tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', str_to_date(@' || reg_datail.COLUMNA || ', ''%d/%m/%Y, %H:%i:%s''))';
+              --entra_en_case:=1;
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', NULL, @' ||reg_datail.COLUMNA || ')';
+              entra_en_case:=1;
+              /* (20191024) Angel Ruiz. FIN*/
+            end if;              
+          elsif (reg_datail.LENGTH = '30') then
+          /* (20180417) Angel Ruiz. Otro formato de Fecha  '%d/%m/%Y, %H:%i:%s'*/
+            if (reg_datail.NULABLE = 'N') then
+              tipo_col := reg_datail.COLUMNA || '=' || 'if(trim(@' || reg_datail.COLUMNA || ')='''', ''19900101000000'', str_to_date(@' || reg_datail.COLUMNA || ', ''%Y-%m-%dT%H:%i:%s''))';
               entra_en_case:=1;
             else
               /* (20191024) Angel Ruiz. BUG*/
@@ -767,7 +786,7 @@ BEGIN
     --if (pos_ini_hora > 0) then
       UTL_FILE.put_line(fich_salida_sh, 'NOMBRE_FICH_CARGA=`ls -1 ${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_interface_a_cargar ||'`');
       --UTL_FILE.put_line(fich_salida_sh, 'NOMBRE_FICH_FLAG=`ls -1 ${' || NAME_DM || '_FUENTE}/${FCH_CARGA}/' || nombre_flag_a_cargar ||'`');
-    --end if;    
+    --end if;
     /****************************/
     UTL_FILE.put_line(fich_salida_sh, '# Comprobamos que los ficheros a cargar existen');
     UTL_FILE.put_line(fich_salida_sh, 'if [ "${NOMBRE_FICH_CARGA:-SIN_VALOR}" = "SIN_VALOR" ] ; then');
@@ -815,10 +834,15 @@ BEGIN
       UTL_FILE.put_line(fich_salida_sh, 'TOT_RECHAZADOS=0');
       UTL_FILE.put_line(fich_salida_sh, 'for FILE in ${NOMBRE_FICH_CARGA}');
       UTL_FILE.put_line(fich_salida_sh, 'do');
+      UTL_FILE.put_line(fich_salida_sh, '  if [ "${FILE##*.}" = "gz" ] ; then');
+      UTL_FILE.put_line(fich_salida_sh, '    gunzip ${FILE}');
+      UTL_FILE.put_line(fich_salida_sh, '    FILE=`echo "${FILE%.*}"`');
+      UTL_FILE.put_line(fich_salida_sh, '  fi');
       UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS=`basename ${FILE}`');
-      --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`basename ${FILE%.*}`.ctl');
-      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/\.ctl/''`');
-      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS_T=`echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/_/''`');
+      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`echo ${NOMBRE_FICH_DATOS%%.*}.ctl`');
+      --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_CTL=`echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/\.ctl/''`');
+      --UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS_T=`echo ${NOMBRE_FICH_DATOS} | sed -e ''s/\.[Dd][Aa][Tt]/_/''`');
+      UTL_FILE.put_line(fich_salida_sh, '  NOMBRE_FICH_DATOS_T=`echo ${NOMBRE_FICH_DATOS%%.*}_`');
       UTL_FILE.put_line(fich_salida_sh, '  cat ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl | sed "s/MY_FILE/${NOMBRE_FICH_DATOS}/g" > ' || '${' || NAME_DM || '_DIR_TMP_CTL}/${NOMBRE_FICH_CTL}');
       --UTL_FILE.put_line(fich_salida_sh, '  sed -e ''s/MY_FILE/${NOMBRE_FICH_DATOS}/'' -e ''s/_DIR_DATOS_/${MVNO_FUENTE}\/${FCH_CARGA}/'' -e ''s/_NOMBRE_INTERFACE_/${NOMBRE_FICH_DATOS}/'' -e ''s/_FCH_DATOS_/${FCH_DATOS}/'' ${' || NAME_DM || '_CTL}/ctl_SA_' || reg_summary.CONCEPT_NAME || '.ctl > '  || '${' || NAME_DM || '_CTL}/${NOMBRE_FICH_CTL}');
       UTL_FILE.put_line(fich_salida_sh, '  awk ''');
@@ -930,7 +954,7 @@ BEGIN
     UTL_FILE.put_line(fich_salida_sh, '');
     UTL_FILE.put_line(fich_salida_sh, 'err_salida=$?');
     UTL_FILE.put_line(fich_salida_sh, 'if [ ${err_salida} -ne 0 ]; then');
-    UTL_FILE.put_line(fich_salida_sh, '  SUBJECT="${INTERFAZ}: Surgio un error en el sqlplus en la llamada a ' || OWNER_MTDT || '.pkg_DMF_MONITOREO_MVNO.inserta_monitoreo en la carga de SA_' || reg_summary.CONCEPT_NAME || '. Error  ${err_salida}."');
+    UTL_FILE.put_line(fich_salida_sh, '  SUBJECT="${INTERFAZ}: Surgio un error en el sqlplus en la llamada a ' || OWNER_MTDT || '.pkg_DMF_MONITOREO_' || NAME_DM ||'.inserta_monitoreo en la carga de SA_' || reg_summary.CONCEPT_NAME || '. Error  ${err_salida}."');
     UTL_FILE.put_line(fich_salida_sh, '  ${SHELL_SMS} "${TELEFONOS_DWH}" "${SUBJECT}"');
     UTL_FILE.put_line(fich_salida_sh, '  echo ${SUBJECT} >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log');
     UTL_FILE.put_line(fich_salida_sh, '  echo `date` >> ' || '${' || NAME_DM || '_TRAZAS}/' || 'load_SA' || '_' || reg_summary.CONCEPT_NAME || '_${FECHA_HORA}.log');
